@@ -1,5 +1,4 @@
 <script setup>
-// add deleting
 import { vOnClickOutside } from '@vueuse/components'
 import { get, set, reactiveComputed, useEventListener } from '@vueuse/core'
 import { useSortable } from '@vueuse/integrations/useSortable'
@@ -12,7 +11,7 @@ const cmsArray = [
   { name: 'GOG', value: 'gog' },
   { name: 'Itch.io', value: 'itch' },
   /* { name: 'Nintendo eShop (US)', value: 'eshop_us' },
-  { name: 'Nintendo eShop (EU)', value: 'eshop_eu' },
+  { name: 'Nintendo eShop (EU/AU)', value: 'eshop_eu' },
   { name: 'Nintendo eShop (JP)', value: 'eshop_jp' }, */
   { name: 'Steam', value: 'steam' },
 ]
@@ -55,13 +54,28 @@ const cmsResFullArray = {
     { name: 'X (Twitter) post', value: '1200x675' },
   ],
   itch: [{ name: 'Cover image *', value: '630x500' }],
-  eshop_us: [{ name: 'Game icon *', value: '1024x1024' }],
-  eshop_eu: [{ name: 'Game icon *', value: '1024x1024' }],
-  eshop_jp: [{ name: 'Game icon *', value: '1024x1024' }],
+  eshop_us: [
+    { name: 'Game icon *', value: '1024x1024' },
+    { name: 'eShop Banner', value: '1920x1080' },
+  ],
+  eshop_eu: [
+    { name: 'Game icon *', value: '1024x1024' },
+    { name: 'eShop Banner', value: '1920x1080' },
+    { name: '2x1 *', value: '2000x1000' },
+    { name: '16x9 *', value: '1920x1080x' },
+    { name: '1x1 *', value: '1080x1080' },
+    { name: 'AOC 1x1', value: '1080x1080' },
+    { name: '16x9', value: '1080x1920' },
+  ],
+  eshop_jp: [
+    { name: 'Game icon *', value: '1024x1024' },
+    { name: 'eShop Banner', value: '1920x1080' },
+    { name: 'Square Hero Banner Banner', value: '1024x1024' },
+  ],
 }
 const cmsModel = ref(cmsArray[cmsArray.length - 1]['value'])
 const cmsResModel = ref(cmsResFullArray[get(cmsModel)][0].value)
-const cmsResArray = computed(() => cmsResFullArray[get(cmsModel)])
+let cmsResArray = computed(() => cmsResFullArray[get(cmsModel)])
 const cmsResModelWidth = computed(() => parseFloat(get(cmsResModel).split('x')[0]))
 const cmsResModelHeight = computed(() => parseFloat(get(cmsResModel).split('x')[1]))
 const cmsLayerArray = reactive({})
@@ -105,8 +119,6 @@ useEventListener(window, 'resize', () => {
   calculateResponsiveZoomScale()
 })
 
-const customRes = ref(null)
-const customResName = ref(null)
 const resFormElem = useTemplateRef('resFormElem')
 const isValidForm = (formElem) => {
   if (!get(formElem)) return
@@ -123,23 +135,87 @@ const isValidForm = (formElem) => {
     })
   return submitThisForm
 }
-const addResolution = () => {
+
+const cmsCustomResArray = ref(null)
+const modifyResolutions = () => {
   if (!isValidForm(resFormElem)) return
-  const newResName = get(customResName)
-  const newRes = () => {
-    let initVar = get(customRes)
-    while (cmsResFullArray['custom'].some((res) => res.value === initVar)) initVar += `x`
-    return initVar
+
+  const newCustomResArray = get(cmsCustomResArray).map((res, index) => ({
+    name: resFormElem.value.querySelectorAll('input')[index * 2].value.trim() || `Custom ${index + 1}`,
+    value: resFormElem.value.querySelectorAll('input')[index * 2 + 1].value.trim()
+  }))
+
+  // Process duplicates by appending 'x' to resolution values
+  const usedValues = new Set()
+  const processedResArray = newCustomResArray.map((res, index) => {
+    let newValue = res.value
+    // Count the number of 'x' characters at the end of the current value
+    const currentXCount = (newValue.match(/x+$/) || [''])[0].length
+    // Base value is the resolution without trailing 'x' characters
+    const baseValue = newValue.replace(/x+$/, '')
+
+    // Check for duplicates, excluding the current index
+    let maxXCount = 0
+    newCustomResArray.forEach((otherRes, otherIndex) => {
+      if (otherIndex !== index) {
+        const otherBaseValue = otherRes.value.replace(/x+$/, '')
+        if (otherBaseValue === baseValue) {
+          const xCount = (otherRes.value.match(/x+$/) || [''])[0].length
+          maxXCount = Math.max(maxXCount, xCount)
+        }
+      }
+    })
+
+    // Also check existing resolutions in cmsResFullArray.custom
+    cmsResFullArray.custom.forEach((existingRes) => {
+      const existingBaseValue = existingRes.value.replace(/x+$/, '')
+      if (existingBaseValue === baseValue) {
+        const xCount = (existingRes.value.match(/x+$/) || [''])[0].length
+        maxXCount = Math.max(maxXCount, xCount)
+      }
+    })
+
+    // If the base value is already used, append enough 'x' characters to make it unique
+    if (usedValues.has(baseValue) || maxXCount > 0) {
+      const neededXCount = maxXCount + 1
+      newValue = baseValue + 'x'.repeat(neededXCount)
+    }
+
+    usedValues.add(baseValue)
+    return { name: res.name, value: newValue }
+  })
+
+  cmsResFullArray.custom = processedResArray
+  const currentResValue = get(cmsResModel)
+  const resolutionExists = processedResArray.some(res => res.value === currentResValue)
+
+  if (!resolutionExists && get(cmsModel) === 'custom') set(cmsResModel, processedResArray[0].value)
+  if (cmsLayerArray['custom']) {
+    const validResolutions = processedResArray.map(res => res.value)
+    for (const res of Object.keys(cmsLayerArray['custom'])) {
+      if (!validResolutions.includes(res)) {
+        delete cmsLayerArray['custom'][res]
+      }
+    }
   }
-  const newResObj = { name: newResName, value: newRes() }
-  cmsResFullArray['custom'].push(newResObj)
-  set(cmsResModel, cmsResFullArray['custom'][cmsResFullArray.custom.length - 1].value)
-  set(customResName, null)
-  set(customRes, null)
+
+  // Update cmsResArray to reflect changes
+  cmsResArray = computed(() => cmsResFullArray[get(cmsModel)])
+
+  pushToCmsLayerArray()
+  calculateResponsiveZoomScale()
   setModal()
 }
-const removeResolution = () => {
-  if (!prompt('Test?')) return
+const addResolution = () => {
+  const newRes = { name: 'Placeholder', value: '256x256' }
+  get(cmsCustomResArray).push(newRes)
+}
+const removeResolution = (index) => {
+  if (confirm('Are you sure you want to delete this resolution?')) {
+    // remove this resolution from layerArray
+    const newResArray = get(cmsCustomResArray).slice(0, index)
+    set(cmsCustomResArray, newResArray)
+  }
 }
 
 const openInfoLink = () => {
@@ -406,7 +482,6 @@ const layerDefault = {
   locked: false,
 }
 const layerArray = reactive([structuredClone(layerDefault)])
-const layerArrayReversed = computed(() => [...layerArray].reverse())
 const layerStyleArray = computed(() => {
   const array = []
 
@@ -474,7 +549,6 @@ const removeFile = (index) => {
     set(imgArray, newImgArray)
 
     layerArray.forEach((layer) => {
-      console.log(layer)
       if (layer.bgImage === index) layer.bgImage = false
     })
   }
@@ -519,13 +593,8 @@ useSortable(layerArrayWrapper, layerArray, {
 const onDragStart = () => {
   set(isDragging, false)
 }
-const onDragEnd = (event) => {
+const onDragEnd = () => {
   set(isDragging, false)
-  /* const { oldIndex, newIndex } = event
-  const reversedOldIndex = layerArray.length - 1 - oldIndex
-  const reversedNewIndex = layerArray.length - 1 - newIndex
-  const [movedItem] = layerArray.splice(reversedOldIndex, 1)
-  layerArray.splice(reversedNewIndex, 0, movedItem) */
 }
 
 const nameInputElem = useTemplateRef('nameInputElem')
@@ -555,9 +624,13 @@ const removeLayer = (id) => {
 const currentModal = ref(null)
 const setModal = (modal = null) => {
   if (!modal) {
-    set(customResName, '')
+    set(cmsCustomResArray, null)
     set(addFileLink, '')
-    set(customRes, '')
+  }
+  if (modal === 'resModal') {
+    const cmsResTempArray = structuredClone(cmsResFullArray.custom)
+    // remove all the x's at the end of every value
+    set(cmsCustomResArray, structuredClone(cmsResTempArray))
   }
   set(currentModal, modal)
 }
@@ -571,18 +644,32 @@ const setModal = (modal = null) => {
   >
     <TransitionGroup name="modalList">
       <window v-if="currentModal === 'resModal'" class="fixed top-1/2 left-1/2 w-[min(512px,50vw)] -translate-1/2 shadow-2xl">
-        <span class="font-bold">Add a new resolution preset</span>
-        <form class="flex flex-col gap-2 2xl:gap-4" @submit.prevent="addResolution" novalidate="true" ref="resFormElem">
-          <label for="customresname">Name</label>
-          <input v-model.trim="customResName" id="customresname" minlength="1" required />
-          <label for="customres">Resolution</label>
-          <input v-model.trim="customRes" id="customres" placeholder="e.g. 128x128" minlength="3" pattern="[0-9]*x[0-9]*" required />
+        <span class="font-bold">Modify the custom resolution presets</span>
+        <form class="flex flex-col gap-2 2xl:gap-4" @submit.prevent="modifyResolutions" novalidate="true" ref="resFormElem">
+          <div v-for="(customRes, index) in cmsCustomResArray" class="flex flex-row gap-2 2xl:gap-4">
+            <div class="flex flex-1 flex-col gap-2 2xl:gap-4">
+              <label v-if="index === 0">Name</label>
+              <input minlength="1" :value="customRes.name" required />
+            </div>
+            <div class="flex flex-1 flex-col gap-2">
+              <label v-if="index === 0">Resolution</label>
+              <input placeholder="e.g. 128x128" minlength="3" pattern="[0-9]*x[0-9]*" :value="customRes.value" required />
+            </div>
+            <div class="flex flex-col justify-end">
+              <button class="transparent smallest" @click.left.prevent="removeResolution(index)" :disabled="cmsCustomResArray.length === 1" tooltip="Remove this preset">
+                <Icon icon="mdi:minus" class="size-3" />
+              </button>
+              <button class="transparent smallest" @click.left.prevent="addResolution()" tooltip="Add a new preset">
+                <Icon icon="mdi:plus" class="size-3" />
+              </button>
+            </div>
+          </div>
           <div class="flex justify-end gap-4">
             <button class="transparent" @click.prevent.left="setModal()">
               <span>Cancel</span>
             </button>
             <button class="alt" type="submit">
-              <span>Add</span>
+              <span>Save</span>
             </button>
           </div>
         </form>
@@ -608,18 +695,16 @@ const setModal = (modal = null) => {
     <div class="flex flex-row items-stretch gap-2 xl:gap-4">
       <ListboxElem :class="{ 'pointer-events-none opacity-0': inPreview === true }" :optionArray="cmsArray" v-model="cmsModel" tooltip="Change platform" />
       <ListboxElem :class="{ 'pointer-events-none opacity-0': inPreview === true }" :optionArray="cmsResArray" v-model="cmsResModel" tooltip="Change preset" />
-        <button v-if="cmsModel === 'custom'" class="alt" :class="{ 'pointer-events-none opacity-0': inPreview === true }" @click.left="setModal('resModal')" tooltip="Add a new preset">
+      <TransitionGroup name="buttonList">
+        <button v-if="cmsModel === 'custom'" class="alt" :class="{ 'pointer-events-none opacity-0': inPreview === true }" @click.left="setModal('resModal')" tooltip="Edit the custom presets">
           <Icon icon="mdi:monitor-screenshot" class="size-5" />
-          <span class="hidden xl:inline">Add</span>
-        </button>
-        <button v-if="cmsModel === 'custom' && cmsResModel !== '256x256'" :class="{ 'pointer-events-none opacity-0': inPreview === true }" @click.left="removeResolution(get(cmsResModel))" tooltip="Remove this preset">
-          <Icon icon="mdi:trash-can-outline" class="size-5" />
-          <span class="hidden xl:inline">Remove</span>
+          <span class="hidden xl:inline">Edit</span>
         </button>
         <button v-if="cmsModel !== 'custom'" :class="{ 'pointer-events-none opacity-0': inPreview === true }" class="max-w-none overflow-hidden transition-all" @click.left="openInfoLink">
           <Icon icon="mdi:info" class="size-5" />
           <span class="hidden xl:inline">Info</span>
         </button>
+      </TransitionGroup>
     </div>
     <div class="absolute left-1/2 flex -translate-x-1/2 flex-row items-stretch">
       <button class="rounded-r-none px-4" :disabled="zoomScale === 5" @click.left.exact="setZoomScale(-5)" @click.left.shift="setZoomScale(-10)" tooltip="Zoom out by 5% (hold shift for 10%)">
@@ -689,7 +774,7 @@ const setModal = (modal = null) => {
           </button>
         </div>
       </div>
-      <div v-if="currentLayer.bgGradient" class="flex flex-col gap-2">
+      <div v-if="currentLayer.bgGradient" class="flex flex-col gap-4">
         <div class="flex space-x-4">
           <label for="bgfrom" class="flex-1">From</label>
           <label for="bgto" class="flex-1">To</label>
@@ -880,5 +965,17 @@ const setModal = (modal = null) => {
 .modalList-leave-to {
   transform: translateY(1.5rem);
   opacity: 0;
+}
+
+.buttonList-enter-active,
+.buttonList-leave-active {
+  transition: all 0.25s ease-in-out;
+  overflow: hidden;
+}
+
+.buttonList-enter-from,
+.buttonList-leave-to {
+  max-width: 0px;
+  padding: 0;
 }
 </style>
