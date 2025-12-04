@@ -5,6 +5,7 @@ import { useSortable } from '@vueuse/integrations/useSortable'
 import ListboxElem from './components/ListboxElem.vue'
 import domToImage from 'dom-to-image'
 import { Icon } from '@iconify/vue'
+import JSZip from 'jszip'
 
 const cmsArray = [
   { name: 'Custom', value: 'custom' },
@@ -387,14 +388,13 @@ watch(exportModel, () => {
   set(exportModel, '')
 })
 const exportImage = async (kind) => {
-  const imageWrapperElem = get(layerWrapperElem).querySelector('.imageWrapperElem')
-  const writeImage = async (type) => {
-    const imageName = cmsResFullArray[get(cmsModel)]
+  const writeImage = async () => {
+    const name = cmsResFullArray[get(cmsModel)]
       .find((res) => res.value === get(cmsResModel))
       .name.replace(/\s\*$/m, '')
       .replace(/\s/, '-')
       .toLowerCase()
-    const imageBlob = await domToImage.toBlob(imageWrapperElem, {
+    const blob = await domToImage.toBlob(imageWrapperElem, {
       width: get(cmsResModelWidth),
       height: get(cmsResModelHeight),
       style: {
@@ -402,24 +402,34 @@ const exportImage = async (kind) => {
         top: 0,
       },
     })
-    downloadFile(imageBlob, `cover_${get(cmsModel)}_${imageName}.${type}`)
+    return { name, blob }
   }
+
+  const imageWrapperElem = get(layerWrapperElem).querySelector('.imageWrapperElem')
   const fileType = kind.endsWith('_all') ? kind.split('_')[0] : kind
   set(isExporting, true)
   set(zoomScale, 100)
 
   if (kind.endsWith('_all')) {
     const resolutions = cmsResFullArray[get(cmsModel)]
+    const zip = new JSZip()
     await nextTick()
 
     for (const resolution of resolutions) {
       set(cmsResModel, resolution.value)
       await nextTick()
 
-      await new Promise((resolve) => setTimeout(resolve, 250))
-      writeImage(fileType)
+      await new Promise((resolve) => setTimeout(resolve, 125))
+      const image = await writeImage(fileType)
+      zip.file(`cover_${get(cmsModel)}_${image.name}.${fileType}`, image.blob)
     }
-  } else writeImage(fileType)
+
+    const zipBlob = await zip.generateAsync({ type: 'blob' })
+    downloadFile(zipBlob, `covers_${get(cmsModel)}_${fileType}.zip`)
+  } else {
+    const image = await writeImage(fileType)
+    downloadFile(image.blob, `cover_${get(cmsModel)}_${image.name}.${fileType}`)
+  }
 
   calculateResponsiveZoomScale()
   set(isExporting, false)
