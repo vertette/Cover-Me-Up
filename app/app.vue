@@ -420,7 +420,7 @@ const exportImage = async (kind) => {
       writeImage(fileType)
     }
   } else writeImage(fileType)
-  
+
   calculateResponsiveZoomScale()
   set(isExporting, false)
 }
@@ -679,6 +679,30 @@ const setModal = (modal = null) => {
           </div>
         </form>
       </window>
+      <window v-if="currentModal === 'aboutModal'" class="fixed top-1/2 left-1/2 w-[min(512px,50vw)] -translate-1/2 shadow-2xl">
+        <span class="font-bold">About <em>Cover Me Up</em></span>
+        <div class="flex flex-col gap-2 2xl:gap-4">
+          <p>
+            <em>Cover Me Up</em> is a web application that lets you quickly create art assets for products sold on online stores such as Steam or GOG.
+            In contrast to normal photo editors, <em>Cover Me Up</em> is built for quick and easy editing for assets that need to be exported to 
+            multiple kinds of resolutions. No endless fussing with layers and canvas sizes.
+          </p>
+          <p>
+            Presets are divided by platform and resolution. Each resolution with an asterisk is a required asset, and each newly selected resolution 
+            will reuse the settings of the previous one, though changing them after that will not change other presets. Make sure to check if your assets 
+            look correct before you export them all!
+          </p>
+          <p>
+            <em>Cover Me Up</em> is built by Vertette. Bug him with your feedback or bug reports online <a href="https://x.com/Vertette" target="_blank">
+              on Twitter</a> or <a href="mailto:vertettegd.com">through an e-mail</a>.
+          </p>
+          <div class="flex justify-end gap-4">
+            <button class="alt" @click.left="setModal()">
+              <span>OK</span>
+            </button>
+          </div>
+        </div>
+      </window>
     </TransitionGroup>
   </div>
   <header class="flex w-full flex-row items-stretch justify-between bg-slate-700 px-4 py-3 transition-all xl:px-6 xl:py-5" :class="{ 'bg-transparent': inPreview }">
@@ -884,6 +908,7 @@ const setModal = (modal = null) => {
       </div>
       <ListboxElem class="flex-1" :optionArray="bgSettingsRepeatArray" v-model="currentLayer.bgImageRepeat" :disabled="currentLayer.locked" />
     </window>
+    <button class="alt" @click="setModal('aboutModal')"><Icon icon="mdi:help" class="size-5" /><span>About</span></button>
     <window class="w-88 2xl:w-96" :class="{ 'pointer-events-none opacity-0': inPreview }">
       <div class="flex w-full justify-between">
         <span class="font-bold">Layers</span>
