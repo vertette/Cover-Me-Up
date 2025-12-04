@@ -637,7 +637,7 @@ const setModal = (modal = null) => {
 </script>
 
 <template>
-  <div class="pointer-events-none fixed top-0 left-0 z-50 flex h-full w-full items-center justify-center bg-slate-950 md:hidden">
+  <div class="pointer-events-none fixed top-0 left-0 z-50 flex h-full w-full items-center justify-center bg-slate-950 lg:hidden">
     <p class="text-xl">This web app is not designed to work on such a small screen.</p>
   </div>
   <div
