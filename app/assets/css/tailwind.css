@@ -87,6 +87,7 @@
     @apply text-slate-800/50;
   }
 
+  button.alt:disabled,
   input:disabled {
     @apply bg-gray-300/50 text-slate-800;
   }

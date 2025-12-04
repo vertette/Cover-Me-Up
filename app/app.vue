@@ -639,7 +639,7 @@ let adjustTimeout
 let adjustInterval
 
 const parseValue = (val) => {
-  const match = val.match(/^([-?\d\.]+)(.*)$/)
+  const match = val.toString().match(/^([-?\d\.]+)(.*)$/)
   if (match) return { num: parseFloat(match[1]), unit: match[2] }
   return false
 }
@@ -900,19 +900,23 @@ const stopAdjust = () => {
           </button>
           <button
             class="transparent smallest"
-            @click.left.exact="currentLayer.bgRotate -= 5"
-            @click.left.shift="currentLayer.bgRotate -= 15"
+            @mousedown.left.exact.exact="startAdjust('bgRotate', -1)"
+            @mousedown.left.exact.shift="startAdjust('bgRotate', -5)"
+            @mouseleave="stopAdjust"
+            @mouseup="stopAdjust"
             :disabled="currentLayer.locked"
-            tooltip="Rotate 5 deg counter-clockwise (hold shift for 15)"
+            tooltip="Rotate 1 deg counter-clockwise (hold shift for 5)"
           >
             <Icon icon="mdi:rotate-counter-clockwise" class="size-3" />
           </button>
           <button
             class="transparent smallest"
-            @click.left.exact="currentLayer.bgRotate += 5"
-            @click.left.shift="currentLayer.bgRotate += 15"
+            @mousedown.left.exact.exact="startAdjust('bgRotate', 1)"
+            @mousedown.left.exact.shift="startAdjust('bgRotate', 5)"
+            @mouseleave="stopAdjust"
+            @mouseup="stopAdjust"
             :disabled="currentLayer.locked"
-            tooltip="Rotate 5 deg clockwise (hold shift for 15)"
+            tooltip="Rotate 1 deg clockwise (hold shift for 5)"
           >
             <Icon icon="mdi:rotate-clockwise" class="size-3" />
           </button>
@@ -925,9 +929,29 @@ const stopAdjust = () => {
       </div>
       <div class="flex items-center gap-x-1">
         <div class="flex w-full">
-          <button class="alt rounded-r-none px-4" :disabled="currentLayer.locked" @mousedown="startAdjust('bgImageHorPos', -1)" @mouseup="stopAdjust" @mouseleave="stopAdjust">-</button>
+          <button
+            class="alt rounded-r-none px-4"
+            @mousedown.left.exact="startAdjust('bgImageHorPos', -1)"
+            @mousedown.left.shift="startAdjust('bgImageHorPos', -5)"
+            @mouseleave="stopAdjust"
+            @mouseup="stopAdjust"
+            :disabled="currentLayer.locked"
+            tooltip="Decrease by 1 (hold shift for 5)"
+          >
+            <span>-</span>
+          </button>
           <input v-model="currentLayer.bgImageHorPos" class="rounded-none px-0 text-center" id="horizontal" :disabled="currentLayer.locked" />
-          <button class="alt rounded-l-none px-4" :disabled="currentLayer.locked" @mousedown="startAdjust('bgImageHorPos', 1)" @mouseup="stopAdjust" @mouseleave="stopAdjust">+</button>
+          <button
+            class="alt rounded-l-none px-4"
+            @mousedown.left.exact="startAdjust('bgImageHorPos', 1)"
+            @mousedown.left.shift="startAdjust('bgImageHorPos', 5)"
+            @mouseleave="stopAdjust"
+            @mouseup="stopAdjust"
+            :disabled="currentLayer.locked"
+            tooltip="Increase by 1 (hold shift for 5)"
+          >
+            <span>+</span>
+          </button>
         </div>
         <button
           @click.left="[currentLayer.bgImageHorPos, currentLayer.bgImageVerPos] = [currentLayer.bgImageVerPos, currentLayer.bgImageHorPos]"
@@ -938,9 +962,29 @@ const stopAdjust = () => {
           <Icon icon="mdi:swap-horizontal" class="!size-5" />
         </button>
         <div class="flex w-full">
-          <button class="alt rounded-r-none px-4" :disabled="currentLayer.locked" @mousedown="startAdjust('bgImageVerPos', -1)" @mouseup="stopAdjust" @mouseleave="stopAdjust">-</button>
+          <button
+            class="alt rounded-r-none px-4"
+            @mousedown.left.exact="startAdjust('bgImageVerPos', -1)"
+            @mousedown.left.shift="startAdjust('bgImageVerPos', -5)"
+            @mouseup="stopAdjust"
+            @mouseleave="stopAdjust"
+            :disabled="currentLayer.locked"
+            tooltip="Decrease by 1 (hold shift for 5)"
+          >
+            <span>-</span>
+          </button>
           <input v-model="currentLayer.bgImageVerPos" class="rounded-none px-0 text-center" id="vertical" :disabled="currentLayer.locked" />
-          <button class="alt rounded-l-none px-4" :disabled="currentLayer.locked" @mousedown="startAdjust('bgImageVerPos', 1)" @mouseup="stopAdjust" @mouseleave="stopAdjust">+</button>
+          <button
+            class="alt rounded-l-none px-4"
+            @mousedown.left.exact="startAdjust('bgImageVerPos', 1)"
+            @mousedown.left.shift="startAdjust('bgImageVerPos', 5)"
+            @mouseup="stopAdjust"
+            @mouseleave="stopAdjust"
+            :disabled="currentLayer.locked"
+            tooltip="Increase by 1 (hold shift for 5)"
+          >
+            <span>+</span>
+          </button>
         </div>
       </div>
       <div class="flex items-center gap-x-1">
@@ -950,9 +994,29 @@ const stopAdjust = () => {
       </div>
       <div class="flex items-center gap-x-1">
         <div class="flex w-full">
-          <button class="alt rounded-r-none px-4" :disabled="currentLayer.locked" @mousedown="startAdjust('bgImageHorSize', -1)" @mouseup="stopAdjust" @mouseleave="stopAdjust">-</button>
+          <button
+            class="alt rounded-r-none px-4"
+            @mousedown.left.exact="startAdjust('bgImageHorSize', -1)"
+            @mousedown.left.shift="startAdjust('bgImageHorSize', -5)"
+            @mouseup="stopAdjust"
+            @mouseleave="stopAdjust"
+            :disabled="currentLayer.locked"
+            tooltip="Decrease by 1 (hold shift for 5)"
+          >
+            <span>-</span>
+          </button>
           <input v-model="currentLayer.bgImageHorSize" class="rounded-none px-0 text-center" id="width" :disabled="currentLayer.locked" />
-          <button class="alt rounded-l-none px-4" :disabled="currentLayer.locked" @mousedown="startAdjust('bgImageHorSize', 1)" @mouseup="stopAdjust" @mouseleave="stopAdjust">+</button>
+          <button
+            class="alt rounded-l-none px-4"
+            @mousedown.left.exact="startAdjust('bgImageHorSize', 1)"
+            @mousedown.left.shift="startAdjust('bgImageHorSize', 5)"
+            @mouseup="stopAdjust"
+            @mouseleave="stopAdjust"
+            :disabled="currentLayer.locked"
+            tooltip="Increase by 1 (hold shift for 5)"
+          >
+            <span>+</span>
+          </button>
         </div>
         <button
           @click.left="[currentLayer.bgImageHorSize, currentLayer.bgImageVerSize] = [currentLayer.bgImageVerSize, currentLayer.bgImageHorSize]"
@@ -963,9 +1027,29 @@ const stopAdjust = () => {
           <Icon icon="mdi:swap-horizontal" class="!size-5" />
         </button>
         <div class="flex w-full">
-          <button class="alt rounded-r-none px-4" :disabled="currentLayer.locked" @mousedown="startAdjust('bgImageVerSize', -1)" @mouseup="stopAdjust" @mouseleave="stopAdjust">-</button>
+          <button
+            class="alt rounded-r-none px-4"
+            @mousedown.left.exact="startAdjust('bgImageVerSize', -1)"
+            @mousedown.left.shift="startAdjust('bgImageVerSize', -5)"
+            @mouseup="stopAdjust"
+            @mouseleave="stopAdjust"
+            :disabled="currentLayer.locked"
+            tooltip="Decrease by 1 (hold shift for 5)"
+          >
+            <span>-</span>
+          </button>
           <input v-model="currentLayer.bgImageVerSize" class="rounded-none px-0 text-center" id="height" :disabled="currentLayer.locked" />
-          <button class="alt rounded-l-none px-4" :disabled="currentLayer.locked" @mousedown="startAdjust('bgImageVerSize', 1)" @mouseup="stopAdjust" @mouseleave="stopAdjust">+</button>
+          <button
+            class="alt rounded-l-none px-4"
+            @mousedown.left.exact="startAdjust('bgImageVerSize', 1)"
+            @mousedown.left.shift="startAdjust('bgImageVerSize', 5)"
+            @mouseup="stopAdjust"
+            @mouseleave="stopAdjust"
+            :disabled="currentLayer.locked"
+            tooltip="Decrease by 1 (hold shift for 5)"
+          >
+            <span>+</span>
+          </button>
         </div>
       </div>
       <ListboxElem class="flex-1" :optionArray="bgSettingsRepeatArray" v-model="currentLayer.bgImageRepeat" :disabled="currentLayer.locked" />
