@@ -377,43 +377,18 @@ const exportModel = ref('')
 const exportArray = [
   { name: 'This preset as .png', value: 'png' },
   { name: 'This preset as .jpg', value: 'jpg' },
+  /* { name: 'This preset as .psd (experimental)', value: 'psd' }, */
   { name: `All platform presets as .png`, value: 'png_all' },
   { name: `All platform presets as .jpg`, value: 'jpg_all' },
+  /* { name: 'All platform presets as .psd (experimental)', value: 'psd_all' }, */
 ]
 watch(exportModel, () => {
-  exportImage(get(exportModel))
-  set(exportModel, '')
+  if (get(exportModel) !== "") exportImage(get(exportModel))
+  set(exportModel, "")
 })
 const exportImage = async (kind) => {
   const imageWrapperElem = get(layerWrapperElem).querySelector('.imageWrapperElem')
-  set(isExporting, true)
-  set(zoomScale, 100)
-
-  if (kind.endsWith('_all')) {
-    const resolutions = cmsResFullArray[get(cmsModel)]
-    await nextTick()
-
-    for (const resolution of resolutions) {
-      set(cmsResModel, resolution.value)
-      await nextTick()
-
-      await new Promise((resolve) => setTimeout(resolve, 250))
-      const imageName = cmsResFullArray[get(cmsModel)]
-        .find((res) => res.value === get(cmsResModel))
-        .name.replace(/\s\*$/m, '')
-        .replace(/\s/, '-')
-        .toLowerCase()
-      const imageBlob = await domToImage.toBlob(imageWrapperElem, {
-        width: get(cmsResModelWidth),
-        height: get(cmsResModelHeight),
-        style: {
-          left: 0,
-          top: 0,
-        },
-      })
-      downloadFile(imageBlob, `cover-${get(cmsModel)}_${imageName}.${kind.split('_')[0]}`)
-    }
-  } else {
+  const writeImage = async (type) => {
     const imageName = cmsResFullArray[get(cmsModel)]
       .find((res) => res.value === get(cmsResModel))
       .name.replace(/\s\*$/m, '')
@@ -427,10 +402,25 @@ const exportImage = async (kind) => {
         top: 0,
       },
     })
-    downloadFile(imageBlob, `cover_${get(cmsModel)}_${imageName}.${kind}`)
+    downloadFile(imageBlob, `cover_${get(cmsModel)}_${imageName}.${type}`)
   }
+  const fileType = (kind.endsWith('_all')) ? kind.split('_')[0] : kind
+  set(isExporting, true)
+  set(zoomScale, 100)
 
-  await new Promise((resolve) => setTimeout(resolve, 250))
+  if (kind.endsWith('_all')) {
+    const resolutions = cmsResFullArray[get(cmsModel)]
+    await nextTick()
+
+    for (const resolution of resolutions) {
+      set(cmsResModel, resolution.value)
+      await nextTick()
+
+      await new Promise((resolve) => setTimeout(resolve, 250))
+      writeImage(fileType)
+    }
+  } else writeImage(fileType)
+  
   calculateResponsiveZoomScale()
   set(isExporting, false)
 }
