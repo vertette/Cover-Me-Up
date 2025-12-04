@@ -142,7 +142,7 @@ const modifyResolutions = () => {
 
   const newCustomResArray = get(cmsCustomResArray).map((res, index) => ({
     name: resFormElem.value.querySelectorAll('input')[index * 2].value.trim() || `Custom ${index + 1}`,
-    value: resFormElem.value.querySelectorAll('input')[index * 2 + 1].value.trim()
+    value: resFormElem.value.querySelectorAll('input')[index * 2 + 1].value.trim(),
   }))
 
   // Process duplicates by appending 'x' to resolution values
@@ -187,11 +187,11 @@ const modifyResolutions = () => {
 
   cmsResFullArray.custom = processedResArray
   const currentResValue = get(cmsResModel)
-  const resolutionExists = processedResArray.some(res => res.value === currentResValue)
+  const resolutionExists = processedResArray.some((res) => res.value === currentResValue)
 
   if (!resolutionExists && get(cmsModel) === 'custom') set(cmsResModel, processedResArray[0].value)
   if (cmsLayerArray['custom']) {
-    const validResolutions = processedResArray.map(res => res.value)
+    const validResolutions = processedResArray.map((res) => res.value)
     for (const res of Object.keys(cmsLayerArray['custom'])) {
       if (!validResolutions.includes(res)) {
         delete cmsLayerArray['custom'][res]
@@ -383,8 +383,8 @@ const exportArray = [
   /* { name: 'All platform presets as .psd (experimental)', value: 'psd_all' }, */
 ]
 watch(exportModel, () => {
-  if (get(exportModel) !== "") exportImage(get(exportModel))
-  set(exportModel, "")
+  if (get(exportModel) !== '') exportImage(get(exportModel))
+  set(exportModel, '')
 })
 const exportImage = async (kind) => {
   const imageWrapperElem = get(layerWrapperElem).querySelector('.imageWrapperElem')
@@ -404,7 +404,7 @@ const exportImage = async (kind) => {
     })
     downloadFile(imageBlob, `cover_${get(cmsModel)}_${imageName}.${type}`)
   }
-  const fileType = (kind.endsWith('_all')) ? kind.split('_')[0] : kind
+  const fileType = kind.endsWith('_all') ? kind.split('_')[0] : kind
   set(isExporting, true)
   set(zoomScale, 100)
 
@@ -627,6 +627,9 @@ const setModal = (modal = null) => {
 </script>
 
 <template>
+  <div class="pointer-events-none fixed top-0 left-0 z-50 flex h-full w-full items-center justify-center bg-slate-950 md:hidden">
+    <p class="text-xl">This web app is not designed to work on such a small screen.</p>
+  </div>
   <div
     class="pointer-events-none fixed top-0 left-0 z-100 h-screen w-screen bg-slate-950/70 opacity-0 transition-opacity delay-150 duration-250"
     :class="{ '!pointer-events-auto !opacity-100 delay-[0s]': currentModal }"
