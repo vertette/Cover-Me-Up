@@ -803,19 +803,19 @@ const stopAdjust = () => {
     </TransitionGroup>
   </div>
   <header class="flex w-full flex-row items-stretch justify-between gap-2 bg-slate-700 px-4 py-3 transition-all xl:px-6 xl:py-5" :class="{ 'bg-transparent': inPreview }">
-    <div class="flex flex-row items-stretch gap-2 xl:gap-4">
+    <div class="flex flex-row items-stretch gap-2 duration-250 ease-in-out xl:gap-4" :class="{ 'pointer-events-none opacity-0': inPreview }">
       <button class="alt" @click="setModal('aboutModal')">
         <Icon icon="mdi:help" class="size-5" />
         <span class="hidden xl:inline">About</span>
       </button>
-      <ListboxElem :class="{ 'pointer-events-none opacity-0': inPreview === true }" :optionArray="cmsArray" v-model="cmsModel" tooltip="Change platform" />
-      <ListboxElem :class="{ 'pointer-events-none opacity-0': inPreview === true }" :optionArray="cmsResArray" v-model="cmsResModel" tooltip="Change preset" />
+      <ListboxElem :optionArray="cmsArray" v-model="cmsModel" tooltip="Change platform" />
+      <ListboxElem :optionArray="cmsResArray" v-model="cmsResModel" tooltip="Change preset" />
       <TransitionGroup name="buttonList">
-        <button v-if="cmsModel === 'custom'" class="alt" :class="{ 'pointer-events-none opacity-0': inPreview === true }" @click.left="setModal('resModal')" tooltip="Edit the custom presets">
+        <button v-if="cmsModel === 'custom'" class="alt" @click.left="setModal('resModal')" tooltip="Edit the custom presets">
           <Icon icon="mdi:monitor-screenshot" class="size-5" />
           <span class="hidden xl:inline">Edit</span>
         </button>
-        <button v-if="cmsModel !== 'custom'" :class="{ 'pointer-events-none opacity-0': inPreview === true }" class="max-w-none overflow-hidden transition-all" @click.left="openInfoLink">
+        <button v-if="cmsModel !== 'custom'" class="max-w-none overflow-hidden transition-all" @click.left="openInfoLink">
           <Icon icon="mdi:info" class="size-5" />
           <span class="hidden xl:inline">Info</span>
         </button>
@@ -1109,7 +1109,7 @@ const stopAdjust = () => {
       </div>
       <ListboxElem class="flex-1" :optionArray="bgSettingsRepeatArray" v-model="currentLayer.bgImageRepeat" :disabled="currentLayer.locked" />
     </window>
-    <div class="flex">
+    <div class="flex duration-250 ease-in-out" :class="{ 'pointer-events-none opacity-0': inPreview }">
       <button class="relative rounded-r-none border-r-0" @click.left="copyCurrentSettings" tooltip="Copy this preset's layers">
         <Icon v-if="copySuccess" icon="mdi:thumbs-up" class="absolute left-4 size-5 animate-ping" style="animation-iteration-count: 1" />
         <Icon icon="mdi:content-copy" class="size-5" />
