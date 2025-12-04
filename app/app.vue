@@ -751,8 +751,12 @@ const stopAdjust = () => {
       </window>
     </TransitionGroup>
   </div>
-  <header class="flex w-full flex-row items-stretch justify-between bg-slate-700 px-4 py-3 transition-all xl:px-6 xl:py-5" :class="{ 'bg-transparent': inPreview }">
+  <header class="flex w-full flex-row items-stretch justify-between gap-2 bg-slate-700 px-4 py-3 transition-all xl:px-6 xl:py-5" :class="{ 'bg-transparent': inPreview }">
     <div class="flex flex-row items-stretch gap-2 xl:gap-4">
+      <button class="alt" @click="setModal('aboutModal')">
+        <Icon icon="mdi:help" class="size-5" />
+        <span class="hidden xl:inline">About</span>
+      </button>
       <ListboxElem :class="{ 'pointer-events-none opacity-0': inPreview === true }" :optionArray="cmsArray" v-model="cmsModel" tooltip="Change platform" />
       <ListboxElem :class="{ 'pointer-events-none opacity-0': inPreview === true }" :optionArray="cmsResArray" v-model="cmsResModel" tooltip="Change preset" />
       <TransitionGroup name="buttonList">
@@ -766,7 +770,7 @@ const stopAdjust = () => {
         </button>
       </TransitionGroup>
     </div>
-    <div class="absolute left-1/2 flex -translate-x-1/2 flex-row items-stretch">
+    <div class="ml-auto flex flex-row items-stretch xl:absolute xl:left-1/2 xl:-translate-x-1/2">
       <button class="rounded-r-none px-4" :disabled="zoomScale === 5" @click.left.exact="setZoomScale(-5)" @click.left.shift="setZoomScale(-10)" tooltip="Zoom out by 5% (hold shift for 10%)">
         <Icon icon="mdi:minus" class="size-5" />
       </button>
@@ -1054,10 +1058,6 @@ const stopAdjust = () => {
       </div>
       <ListboxElem class="flex-1" :optionArray="bgSettingsRepeatArray" v-model="currentLayer.bgImageRepeat" :disabled="currentLayer.locked" />
     </window>
-    <button class="alt" @click="setModal('aboutModal')">
-      <Icon icon="mdi:help" class="size-5" />
-      <span class="hidden xl:inline">About</span>
-    </button>
     <window class="w-88 2xl:w-96" :class="{ 'pointer-events-none opacity-0': inPreview }">
       <div class="flex w-full justify-between">
         <span class="font-bold">Layers</span>
