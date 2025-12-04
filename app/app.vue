@@ -943,6 +943,7 @@ const setModal = (modal = null) => {
           <span
             v-show="nameInputId !== layer.id"
             class="flex-1 truncate overflow-hidden rounded-sm border border-transparent bg-transparent px-2 py-0.5 text-sm text-gray-200 hover:opacity-50 2xl:text-base"
+            @click.left="currentLayerId = layer.id"
             @dblclick="setEditName(layer.id)"
             tooltip="Change this layer's name"
           >
