@@ -634,6 +634,41 @@ const setModal = (modal = null) => {
   }
   set(currentModal, modal)
 }
+
+let adjustTimeout
+let adjustInterval
+
+const parseValue = (val) => {
+  const match = val.match(/^([-?\d\.]+)(.*)$/)
+  if (match) return { num: parseFloat(match[1]), unit: match[2] }
+  return false
+}
+
+const adjustValue = (prop, delta) => {
+  const val = currentLayer[prop]
+  const parsed = parseValue(val)
+  if (parsed) currentLayer[prop] = parsed.num + delta + parsed.unit
+  else return
+}
+
+const startAdjust = (prop, delta) => {
+  if (get(currentLayer).locked) return
+  const adjustWaitTime = 500
+  const adjustIvTime = 33
+
+  adjustValue(prop, delta)
+  clearTimeout(adjustTimeout)
+  adjustTimeout = setTimeout(() => {
+    adjustInterval = setInterval(() => {
+      adjustValue(prop, delta)
+    }, adjustIvTime)
+  }, adjustWaitTime)
+}
+
+const stopAdjust = () => {
+  clearTimeout(adjustTimeout)
+  clearInterval(adjustInterval)
+}
 </script>
 
 <template>
@@ -865,19 +900,19 @@ const setModal = (modal = null) => {
           </button>
           <button
             class="transparent smallest"
-            @click.left.exact="currentLayer.bgRotate -= 15"
-            @click.left.shift="currentLayer.bgRotate -= 45"
+            @click.left.exact="currentLayer.bgRotate -= 5"
+            @click.left.shift="currentLayer.bgRotate -= 15"
             :disabled="currentLayer.locked"
-            tooltip="Rotate 15 deg counter-clockwise (hold shift for 45)"
+            tooltip="Rotate 5 deg counter-clockwise (hold shift for 15)"
           >
             <Icon icon="mdi:rotate-counter-clockwise" class="size-3" />
           </button>
           <button
             class="transparent smallest"
-            @click.left.exact="currentLayer.bgRotate += 15"
-            @click.left.shift="currentLayer.bgRotate += 45"
+            @click.left.exact="currentLayer.bgRotate += 5"
+            @click.left.shift="currentLayer.bgRotate += 15"
             :disabled="currentLayer.locked"
-            tooltip="Rotate 15 deg clockwise (hold shift for 45)"
+            tooltip="Rotate 5 deg clockwise (hold shift for 15)"
           >
             <Icon icon="mdi:rotate-clockwise" class="size-3" />
           </button>
@@ -889,7 +924,11 @@ const setModal = (modal = null) => {
         <label for="vertical"><a href="https://css-tricks.com/almanac/properties/b/background-position/" target="_blank">Vertical position</a></label>
       </div>
       <div class="flex items-center gap-x-1">
-        <input v-model="currentLayer.bgImageHorPos" id="horizontal" :disabled="currentLayer.locked" />
+        <div class="flex w-full">
+          <button class="alt rounded-r-none px-4" :disabled="currentLayer.locked" @mousedown="startAdjust('bgImageHorPos', -1)" @mouseup="stopAdjust" @mouseleave="stopAdjust">-</button>
+          <input v-model="currentLayer.bgImageHorPos" class="rounded-none px-0 text-center" id="horizontal" :disabled="currentLayer.locked" />
+          <button class="alt rounded-l-none px-4" :disabled="currentLayer.locked" @mousedown="startAdjust('bgImageHorPos', 1)" @mouseup="stopAdjust" @mouseleave="stopAdjust">+</button>
+        </div>
         <button
           @click.left="[currentLayer.bgImageHorPos, currentLayer.bgImageVerPos] = [currentLayer.bgImageVerPos, currentLayer.bgImageHorPos]"
           :disabled="currentLayer.locked"
@@ -898,7 +937,11 @@ const setModal = (modal = null) => {
         >
           <Icon icon="mdi:swap-horizontal" class="!size-5" />
         </button>
-        <input v-model="currentLayer.bgImageVerPos" id="vertical" :disabled="currentLayer.locked" />
+        <div class="flex w-full">
+          <button class="alt rounded-r-none px-4" :disabled="currentLayer.locked" @mousedown="startAdjust('bgImageVerPos', -1)" @mouseup="stopAdjust" @mouseleave="stopAdjust">-</button>
+          <input v-model="currentLayer.bgImageVerPos" class="rounded-none px-0 text-center" id="vertical" :disabled="currentLayer.locked" />
+          <button class="alt rounded-l-none px-4" :disabled="currentLayer.locked" @mousedown="startAdjust('bgImageVerPos', 1)" @mouseup="stopAdjust" @mouseleave="stopAdjust">+</button>
+        </div>
       </div>
       <div class="flex items-center gap-x-1">
         <label for="width"><a href="https://css-tricks.com/almanac/properties/b/background-size/" target="_blank">Background width</a></label>
@@ -906,7 +949,11 @@ const setModal = (modal = null) => {
         <label for="height"><a href="https://css-tricks.com/almanac/properties/b/background-size/" target="_blank">Background height</a></label>
       </div>
       <div class="flex items-center gap-x-1">
-        <input v-model="currentLayer.bgImageHorSize" id="width" :disabled="currentLayer.locked" />
+        <div class="flex w-full">
+          <button class="alt rounded-r-none px-4" :disabled="currentLayer.locked" @mousedown="startAdjust('bgImageHorSize', -1)" @mouseup="stopAdjust" @mouseleave="stopAdjust">-</button>
+          <input v-model="currentLayer.bgImageHorSize" class="rounded-none px-0 text-center" id="width" :disabled="currentLayer.locked" />
+          <button class="alt rounded-l-none px-4" :disabled="currentLayer.locked" @mousedown="startAdjust('bgImageHorSize', 1)" @mouseup="stopAdjust" @mouseleave="stopAdjust">+</button>
+        </div>
         <button
           @click.left="[currentLayer.bgImageHorSize, currentLayer.bgImageVerSize] = [currentLayer.bgImageVerSize, currentLayer.bgImageHorSize]"
           :disabled="currentLayer.locked"
@@ -915,7 +962,11 @@ const setModal = (modal = null) => {
         >
           <Icon icon="mdi:swap-horizontal" class="!size-5" />
         </button>
-        <input v-model="currentLayer.bgImageVerSize" id="height" :disabled="currentLayer.locked" />
+        <div class="flex w-full">
+          <button class="alt rounded-r-none px-4" :disabled="currentLayer.locked" @mousedown="startAdjust('bgImageVerSize', -1)" @mouseup="stopAdjust" @mouseleave="stopAdjust">-</button>
+          <input v-model="currentLayer.bgImageVerSize" class="rounded-none px-0 text-center" id="height" :disabled="currentLayer.locked" />
+          <button class="alt rounded-l-none px-4" :disabled="currentLayer.locked" @mousedown="startAdjust('bgImageVerSize', 1)" @mouseup="stopAdjust" @mouseleave="stopAdjust">+</button>
+        </div>
       </div>
       <ListboxElem class="flex-1" :optionArray="bgSettingsRepeatArray" v-model="currentLayer.bgImageRepeat" :disabled="currentLayer.locked" />
     </window>
