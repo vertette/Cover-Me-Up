@@ -563,6 +563,42 @@ const flipImage = async (direction) => {
   set(isExporting, false)
 }
 
+const copiedSettings = ref(null)
+const copyCurrentSettings = () => {
+  const layersCopy = structuredClone(toRaw(layerArray))
+  if (layersCopy) set(copiedSettings, layersCopy)
+  else alert('Error, the copy went wrong.')
+}
+const pasteCurrentSettings = () => {
+  if (!copiedSettings.value || currentLayer.locked) {
+    alert('You shouldn\'t see be able to see this.')
+    return
+  }
+  if (JSON.stringify(layerArray[0]) !== JSON.stringify(layerDefault))
+    if (!confirm('This will replace all current layers with the copied ones. Continue?')) return
+
+  let newActiveId = null
+  const newLayers = copiedSettings.value.map((copiedLayer) => {
+    const layer = structuredClone(toRaw(copiedLayer))
+    layer.id = Date.now() + Math.random()
+    if (newActiveId === null) newActiveId = layer.id
+    return layer
+  })
+
+  // If the copy was somehow empty, fall back to a single default layer
+  if (newLayers.length === 0) {
+    const fallback = structuredClone(layerDefault)
+    fallback.id = Date.now()
+    newLayers.push(fallback)
+    newActiveId = fallback.id
+  }
+
+  layerArray.length = 0
+  layerArray.push(...newLayers)
+  set(currentLayerId, newActiveId)
+  pushToCmsLayerArray()
+}
+
 const addLayer = () => {
   const layerNew = structuredClone(layerDefault)
   const layerNewId = Date.now()
@@ -1058,6 +1094,16 @@ const stopAdjust = () => {
       </div>
       <ListboxElem class="flex-1" :optionArray="bgSettingsRepeatArray" v-model="currentLayer.bgImageRepeat" :disabled="currentLayer.locked" />
     </window>
+    <div class="flex">
+      <button class="rounded-r-none border-r-0" @click.left="copyCurrentSettings" tooltip="Copy this preset's settings">
+        <Icon icon="mdi:content-copy" class="size-5" />
+        <span class="hidden xl:inline">Copy settings</span>
+      </button>
+      <button class="alt rounded-l-none border-l-0" @click.left="pasteCurrentSettings" tooltip="Paste this preset's settings" :disabled="!copiedSettings || currentLayer.locked">
+        <Icon icon="mdi:content-paste" class="size-5" />
+        <span class="hidden xl:inline">Paste settings</span>
+      </button>
+    </div>
     <window class="w-88 2xl:w-96" :class="{ 'pointer-events-none opacity-0': inPreview }">
       <div class="flex w-full justify-between">
         <span class="font-bold">Layers</span>
