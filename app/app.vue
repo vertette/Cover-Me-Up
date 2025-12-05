@@ -604,8 +604,7 @@ const pasteCurrentSettings = () => {
     newActiveId = fallback.id
   }
 
-  layerArray.length = 0
-  layerArray.push(...newLayers)
+  layerArray.splice(0, layerArray.length, ...newLayers)
   set(currentLayerId, newActiveId)
   pushToCmsLayerArray()
 
