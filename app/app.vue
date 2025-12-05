@@ -545,11 +545,11 @@ const addFileFromLink = () => {
 }
 const removeFile = (index) => {
   if (confirm('Are you sure you want to delete this image?')) {
-    const newImgArray = get(imgArray).slice(0, index)
-    set(imgArray, newImgArray)
+    get(imgArray).splice(index, 1)
 
     layerArray.forEach((layer) => {
       if (layer.bgImage === index) layer.bgImage = false
+      if (typeof layer.bgImage === 'number' && layer.bgImage > index) layer.bgImage--
     })
   }
 }
