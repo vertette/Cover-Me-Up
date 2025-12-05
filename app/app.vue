@@ -347,6 +347,7 @@ const loadSettings = (event) => {
           result.cmsLayerArray[newModelName][newModelRes].forEach((layer) => layerArray.push(structuredClone(layer)))
           set(currentLayerId, layerArray[0].id)
           calculateResponsiveZoomScale()
+          get(settingsInput).value = ''
         }
       } catch (error) {
         console.error('Error loading settings:', error)
@@ -529,6 +530,7 @@ const addFile = (event) => {
       try {
         const result = reader.result
         get(imgArray).push(result)
+        get(fileInput).value = ''
         if (!currentLayer.locked) currentLayer.bgImage = get(imgArray).length - 1
       } catch {
         alert(`Couldn't read ${file.name}. Is this supposed to be an image?`)
