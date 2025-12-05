@@ -697,26 +697,27 @@ const parseValue = (val) => {
   if (match) return { num: parseFloat(match[1]), unit: match[2] }
   return false
 }
-const adjustValue = (prop, delta) => {
-  const val = currentLayer[prop]
-  const parsed = parseValue(val)
-  if (parsed) currentLayer[prop] = parsed.num + delta + parsed.unit
-  else return
-}
-const startAdjustProp = (prop, delta) => {
+const startAdjust = (fnOrProp, delta = 1) => {
   if (get(currentLayer).locked) return
   const adjustWaitTime = 500
   const adjustIvTime = 33
 
-  adjustValue(prop, delta)
+  const execute = () => {
+    if (typeof fnOrProp === 'function') fnOrProp()
+    else {
+      const val = currentLayer[fnOrProp]
+      const parsed = parseValue(val)
+      if (parsed) currentLayer[fnOrProp] = parsed.num + delta + parsed.unit
+    }
+  }
+  execute()
+
   clearTimeout(adjustTimeout)
   adjustTimeout = setTimeout(() => {
-    adjustInterval = setInterval(() => {
-      adjustValue(prop, delta)
-    }, adjustIvTime)
+    adjustInterval = setInterval(execute, adjustIvTime)
   }, adjustWaitTime)
 }
-const stopAdjustProp = () => {
+const stopAdjust = () => {
   clearTimeout(adjustTimeout)
   clearInterval(adjustInterval)
 }
@@ -822,21 +823,29 @@ const stopAdjustProp = () => {
       </TransitionGroup>
     </div>
     <div class="ml-auto flex flex-row items-stretch xl:absolute xl:left-1/2 xl:-translate-x-1/2">
-      <button class="rounded-r-none px-4" 
-        :disabled="zoomScale === 5" 
-        @click.left.exact="setZoomScale(-5)" @click.left.shift="setZoomScale(-10)" 
-        tooltip="Zoom out by 5% (hold shift for 10%)"
-            @mousedown.left.exact="startAdjustProp('bgImageVerSize', 1)"
-            @mousedown.left.shift="startAdjustProp('bgImageVerSize', 5)"
-            @mouseup="stopAdjustProp"
-            @mouseleave="stopAdjustProp"
+      <button
+        class="rounded-r-none px-4"
+        :disabled="zoomScale === 5"
+        @mousedown.left.exact="startAdjust(() => setZoomScale(-1))"
+        @mousedown.left.shift="startAdjust(() => setZoomScale(-5))"
+        @mouseup="stopAdjust"
+        @mouseleave="stopAdjust"
+        tooltip="Zoom out by 1% (hold shift for 5%)"
       >
         <Icon icon="mdi:minus" class="size-5" />
       </button>
       <button class="-mx-[1px] min-w-20 rounded-none px-4" @click.left.exact="zoomScale = 100" @click.left.shift="calculateResponsiveZoomScale()" tooltip="Reset to 100% (hold shift to reset to fit)">
         <span>{{ zoomScale }}%</span>
       </button>
-      <button class="rounded-l-none px-4" :disabled="zoomScale === 100" @click.left.exact="setZoomScale(5)" @click.left.shift="setZoomScale(10)" tooltip="Zoom in by 5% (hold shift for 10%)">
+      <button
+        class="rounded-l-none px-4"
+        :disabled="zoomScale === 100"
+        @mousedown.left.exact="startAdjust(() => setZoomScale(1))"
+        @mousedown.left.shift="startAdjust(() => setZoomScale(5))"
+        @mouseup="stopAdjust"
+        @mouseleave="stopAdjust"
+        tooltip="Zoom in by 1% (hold shift for 5%)"
+      >
         <Icon icon="mdi:plus" class="size-5" />
       </button>
     </div>
@@ -963,10 +972,10 @@ const stopAdjustProp = () => {
           </button>
           <button
             class="transparent smallest"
-            @mousedown.left.exact.exact="startAdjustProp('bgRotate', -1)"
-            @mousedown.left.exact.shift="startAdjustProp('bgRotate', -5)"
-            @mouseleave="stopAdjustProp"
-            @mouseup="stopAdjustProp"
+            @mousedown.left.exact.exact="startAdjust('bgRotate', -1)"
+            @mousedown.left.exact.shift="startAdjust('bgRotate', -5)"
+            @mouseleave="stopAdjust"
+            @mouseup="stopAdjust"
             :disabled="currentLayer.locked"
             tooltip="Rotate 1 deg counter-clockwise (hold shift for 5)"
           >
@@ -974,10 +983,10 @@ const stopAdjustProp = () => {
           </button>
           <button
             class="transparent smallest"
-            @mousedown.left.exact.exact="startAdjustProp('bgRotate', 1)"
-            @mousedown.left.exact.shift="startAdjustProp('bgRotate', 5)"
-            @mouseleave="stopAdjustProp"
-            @mouseup="stopAdjustProp"
+            @mousedown.left.exact.exact="startAdjust('bgRotate', 1)"
+            @mousedown.left.exact.shift="startAdjust('bgRotate', 5)"
+            @mouseleave="stopAdjust"
+            @mouseup="stopAdjust"
             :disabled="currentLayer.locked"
             tooltip="Rotate 1 deg clockwise (hold shift for 5)"
           >
@@ -994,10 +1003,10 @@ const stopAdjustProp = () => {
         <div class="flex w-full">
           <button
             class="alt rounded-r-none px-4"
-            @mousedown.left.exact="startAdjustProp('bgImageHorPos', -1)"
-            @mousedown.left.shift="startAdjustProp('bgImageHorPos', -5)"
-            @mouseleave="stopAdjustProp"
-            @mouseup="stopAdjustProp"
+            @mousedown.left.exact="startAdjust('bgImageHorPos', -1)"
+            @mousedown.left.shift="startAdjust('bgImageHorPos', -5)"
+            @mouseleave="stopAdjust"
+            @mouseup="stopAdjust"
             :disabled="currentLayer.locked"
             tooltip="Decrease by 1 (hold shift for 5)"
           >
@@ -1006,10 +1015,10 @@ const stopAdjustProp = () => {
           <input v-model="currentLayer.bgImageHorPos" class="rounded-none px-0 text-center" id="horizontal" :disabled="currentLayer.locked" />
           <button
             class="alt rounded-l-none px-4"
-            @mousedown.left.exact="startAdjustProp('bgImageHorPos', 1)"
-            @mousedown.left.shift="startAdjustProp('bgImageHorPos', 5)"
-            @mouseleave="stopAdjustProp"
-            @mouseup="stopAdjustProp"
+            @mousedown.left.exact="startAdjust('bgImageHorPos', 1)"
+            @mousedown.left.shift="startAdjust('bgImageHorPos', 5)"
+            @mouseleave="stopAdjust"
+            @mouseup="stopAdjust"
             :disabled="currentLayer.locked"
             tooltip="Increase by 1 (hold shift for 5)"
           >
@@ -1027,10 +1036,10 @@ const stopAdjustProp = () => {
         <div class="flex w-full">
           <button
             class="alt rounded-r-none px-4"
-            @mousedown.left.exact="startAdjustProp('bgImageVerPos', -1)"
-            @mousedown.left.shift="startAdjustProp('bgImageVerPos', -5)"
-            @mouseup="stopAdjustProp"
-            @mouseleave="stopAdjustProp"
+            @mousedown.left.exact="startAdjust('bgImageVerPos', -1)"
+            @mousedown.left.shift="startAdjust('bgImageVerPos', -5)"
+            @mouseup="stopAdjust"
+            @mouseleave="stopAdjust"
             :disabled="currentLayer.locked"
             tooltip="Decrease by 1 (hold shift for 5)"
           >
@@ -1039,10 +1048,10 @@ const stopAdjustProp = () => {
           <input v-model="currentLayer.bgImageVerPos" class="rounded-none px-0 text-center" id="vertical" :disabled="currentLayer.locked" />
           <button
             class="alt rounded-l-none px-4"
-            @mousedown.left.exact="startAdjustProp('bgImageVerPos', 1)"
-            @mousedown.left.shift="startAdjustProp('bgImageVerPos', 5)"
-            @mouseup="stopAdjustProp"
-            @mouseleave="stopAdjustProp"
+            @mousedown.left.exact="startAdjust('bgImageVerPos', 1)"
+            @mousedown.left.shift="startAdjust('bgImageVerPos', 5)"
+            @mouseup="stopAdjust"
+            @mouseleave="stopAdjust"
             :disabled="currentLayer.locked"
             tooltip="Increase by 1 (hold shift for 5)"
           >
@@ -1059,10 +1068,10 @@ const stopAdjustProp = () => {
         <div class="flex w-full">
           <button
             class="alt rounded-r-none px-4"
-            @mousedown.left.exact="startAdjustProp('bgImageHorSize', -1)"
-            @mousedown.left.shift="startAdjustProp('bgImageHorSize', -5)"
-            @mouseup="stopAdjustProp"
-            @mouseleave="stopAdjustProp"
+            @mousedown.left.exact="startAdjust('bgImageHorSize', -1)"
+            @mousedown.left.shift="startAdjust('bgImageHorSize', -5)"
+            @mouseup="stopAdjust"
+            @mouseleave="stopAdjust"
             :disabled="currentLayer.locked"
             tooltip="Decrease by 1 (hold shift for 5)"
           >
@@ -1071,10 +1080,10 @@ const stopAdjustProp = () => {
           <input v-model="currentLayer.bgImageHorSize" class="rounded-none px-0 text-center" id="width" :disabled="currentLayer.locked" />
           <button
             class="alt rounded-l-none px-4"
-            @mousedown.left.exact="startAdjustProp('bgImageHorSize', 1)"
-            @mousedown.left.shift="startAdjustProp('bgImageHorSize', 5)"
-            @mouseup="stopAdjustProp"
-            @mouseleave="stopAdjustProp"
+            @mousedown.left.exact="startAdjust('bgImageHorSize', 1)"
+            @mousedown.left.shift="startAdjust('bgImageHorSize', 5)"
+            @mouseup="stopAdjust"
+            @mouseleave="stopAdjust"
             :disabled="currentLayer.locked"
             tooltip="Increase by 1 (hold shift for 5)"
           >
@@ -1092,10 +1101,10 @@ const stopAdjustProp = () => {
         <div class="flex w-full">
           <button
             class="alt rounded-r-none px-4"
-            @mousedown.left.exact="startAdjustProp('bgImageVerSize', -1)"
-            @mousedown.left.shift="startAdjustProp('bgImageVerSize', -5)"
-            @mouseup="stopAdjustProp"
-            @mouseleave="stopAdjustProp"
+            @mousedown.left.exact="startAdjust('bgImageVerSize', -1)"
+            @mousedown.left.shift="startAdjust('bgImageVerSize', -5)"
+            @mouseup="stopAdjust"
+            @mouseleave="stopAdjust"
             :disabled="currentLayer.locked"
             tooltip="Decrease by 1 (hold shift for 5)"
           >
@@ -1104,10 +1113,10 @@ const stopAdjustProp = () => {
           <input v-model="currentLayer.bgImageVerSize" class="rounded-none px-0 text-center" id="height" :disabled="currentLayer.locked" />
           <button
             class="alt rounded-l-none px-4"
-            @mousedown.left.exact="startAdjustProp('bgImageVerSize', 1)"
-            @mousedown.left.shift="startAdjustProp('bgImageVerSize', 5)"
-            @mouseup="stopAdjustProp"
-            @mouseleave="stopAdjustProp"
+            @mousedown.left.exact="startAdjust('bgImageVerSize', 1)"
+            @mousedown.left.shift="startAdjust('bgImageVerSize', 5)"
+            @mouseup="stopAdjust"
+            @mouseleave="stopAdjust"
             :disabled="currentLayer.locked"
             tooltip="Decrease by 1 (hold shift for 5)"
           >
