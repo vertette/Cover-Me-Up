@@ -83,39 +83,39 @@ const cmsLayerArray = reactive({})
 const oldCmsModel = ref(get(cmsModel))
 const oldCmsResModel = ref(get(cmsResModel))
 const pushToCmsLayerArray = () => {
-  const oldCmsName = get(oldCmsModel)
-  const oldCmsRes = get(oldCmsResModel)
-  const layerArraySnapshot = [...toRaw(layerArray)]
+  const currentPlatform = get(cmsModel)
+  const currentSnapshot = toRaw(layerArray).map((l) => structuredClone(l))
 
-  if (JSON.stringify(layerArraySnapshot) !== JSON.stringify([structuredClone(layerDefault)])) {
-    if (cmsLayerArray[oldCmsName] === undefined) {
-      const oldModelObject = {}
-      oldModelObject[oldCmsRes] = layerArraySnapshot
-      cmsLayerArray[oldCmsName] = oldModelObject
-    } else cmsLayerArray[oldCmsName][oldCmsRes] = layerArraySnapshot
-    cmsLayerArray['default'] = layerArraySnapshot
-  } else cmsLayerArray['default'] = [structuredClone(layerDefault)]
-
-  const newModelRes = get(cmsResModel)
-  const newModelName = get(cmsModel)
-
-  if (cmsLayerArray[newModelName]?.[newModelRes]) {
-    layerArray.length = 0
-    cmsLayerArray[newModelName][newModelRes].forEach((layer) => layerArray.push(structuredClone(toRaw(layer))))
-  } else {
-    layerArray.length = 0
-    cmsLayerArray['default'].forEach((layer) => layerArray.push(structuredClone(toRaw(layer))))
-  }
+  cmsLayerArray[currentPlatform] = currentSnapshot
+  cmsLayerArray.default = currentSnapshot.length > 0 ? currentSnapshot : [structuredClone(layerDefault)]
 }
-watch(cmsModel, (_, oldModel) => {
-  set(oldCmsModel, get(oldModel))
-  set(cmsResModel, cmsResFullArray[get(cmsModel)][0].value)
-})
-watch(cmsResModel, (_, oldModel) => {
-  set(oldCmsResModel, get(oldModel))
-  pushToCmsLayerArray()
-  if (!get(isExporting)) calculateResponsiveZoomScale()
-})
+watch(
+  [cmsModel, cmsResModel],
+  ([newModel, newRes], [oldModel, oldRes]) => {
+    if (newModel !== oldModel || newRes !== oldRes) {
+      // Save current state to the old platform
+      if (oldModel) cmsLayerArray[oldModel] = toRaw(layerArray).map((l) => structuredClone(l))
+      // Load layers from the new platform
+      const saved = cmsLayerArray[newModel]
+      const layersToUse = saved && saved.length > 0 ? saved : cmsLayerArray.default && cmsLayerArray.default.length > 0 ? cmsLayerArray.default : [structuredClone(layerDefault)]
+
+      // Deep clone + fresh IDs
+      const newLayers = layersToUse.map((layer, i) => {
+        const cloned = structuredClone(toRaw(layer))
+        cloned.id = Date.now() + i + Math.random()
+        return cloned
+      })
+
+      // Replace everything in one go
+      layerArray.splice(0, layerArray.length, ...newLayers)
+      // Select first layer if current one vanished
+      if (newLayers.length > 0) set(currentLayerId, newLayers[0].id)
+
+      if (!get(isExporting)) calculateResponsiveZoomScale()
+    }
+  },
+  { flush: 'post' },
+)
 useEventListener(window, 'resize', () => {
   calculateResponsiveZoomScale()
 })
