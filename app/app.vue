@@ -531,7 +531,6 @@ const addFile = (event) => {
         const result = reader.result
         get(imgArray).push(result)
         get(fileInput).value = ''
-        if (!currentLayer.locked) currentLayer.bgImage = get(imgArray).length - 1
       } catch {
         alert(`Couldn't read ${file.name}. Is this supposed to be an image?`)
       }
@@ -541,7 +540,6 @@ const addFile = (event) => {
 const addFileFromLink = () => {
   if (!isValidForm(urlFormElem)) return
   get(imgArray).push(get(addFileLink))
-  if (!currentLayer.locked) currentLayer.bgImage = get(imgArray).length - 1
   set(currentModal, null)
   set(addFileLink, null)
 }
