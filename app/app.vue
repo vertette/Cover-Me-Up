@@ -592,6 +592,8 @@ const pasteCurrentSettings = () => {
   const newLayers = copiedSettings.value.map((copiedLayer) => {
     const layer = structuredClone(toRaw(copiedLayer))
     layer.id = Date.now() + Math.random()
+    if (typeof layer.bgImage === 'number' && (layer.bgImage < 0 || layer.bgImage >= imgArray.value.length)) layer.bgImage = false
+
     if (newActiveId === null) newActiveId = layer.id
     return layer
   })
