@@ -625,18 +625,6 @@ const pasteCurrentSettings = () => {
   }
 }
 
-const addLayer = () => {
-  const layerNew = structuredClone(layerDefault)
-  const layerNewId = Date.now()
-  layerNew.id = layerNewId
-  if (/#([0-9])*$/m.test(get(layerArray)[get(layerArray).length - 1].name)) {
-    const layerNewNumber = get(layerArray)[get(layerArray).length - 1].name.replace(/.*#([0-9])*$/, '$1')
-    layerNew.name = `Layer #${parseInt(layerNewNumber) + 1}`
-  }
-  layerArray.push(layerNew)
-  set(currentLayerId, layerNewId)
-}
-
 const layerArrayWrapper = useTemplateRef('layerArrayWrapper')
 const isDragging = ref(false)
 useSortable(layerArrayWrapper, layerArray, {
