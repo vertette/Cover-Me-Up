@@ -9,9 +9,9 @@ import JSZip from 'jszip'
 
 const cmsArray = [
   { name: 'Custom', value: 'custom' },
+  { name: 'Game Jolt', value: 'game_jolt' },
   { name: 'GOG', value: 'gog' },
   { name: 'Itch.io', value: 'itch' },
-  { name: 'Game Jolt', value: 'game_jolt' },
   /* { name: 'Nintendo eShop (US)', value: 'eshop_us' },
   { name: 'Nintendo eShop (EU/AU)', value: 'eshop_eu' },
   { name: 'Nintendo eShop (JP)', value: 'eshop_jp' }, */
@@ -57,7 +57,7 @@ const cmsResFullArray = {
   ],
   itch: [{ name: 'Cover image *', value: '630x500' }],
   game_jolt: [
-    { name: 'Header', value: '2560x640' },
+    { name: 'Header', value: '1920x480' },
     { name: 'Thumbnail', value: '1920x1080' }
   ],
   eshop_us: [
