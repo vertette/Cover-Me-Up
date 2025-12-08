@@ -614,6 +614,7 @@ const pasteCurrentSettings = () => {
   layerArray.splice(0, layerArray.length, ...newLayers)
   set(currentLayerId, newActiveId)
   pushToCmsLayerArray()
+  syncLayersStructural()
 
   if (!pasteTimeout) {
     set(pasteSuccess, true)
@@ -656,6 +657,7 @@ const onDragStart = () => {
 }
 const onDragEnd = () => {
   set(isDragging, false)
+  syncLayersStructural()
 }
 
 const nameInputElem = useTemplateRef('nameInputElem')
@@ -670,8 +672,20 @@ const setEditName = async (id) => {
 }
 const stopEditingName = async () => {
   set(nameInputId, false)
+  syncLayersStructural()
 }
 
+const addLayer = () => {
+  const layerNew = structuredClone(layerDefault)
+  const layerNewId = Date.now()
+  layerNew.id = layerNewId
+  if (/#([0-9])*$/m.test(get(layerArray)[get(layerArray).length - 1].name)) {
+    const layerNewNumber = get(layerArray)[get(layerArray).length - 1].name.replace(/.*#([0-9])*$/, '$1')
+    layerNew.name = `Layer #${parseInt(layerNewNumber) + 1}`
+  }
+  layerArray.push(layerNew)
+  set(currentLayerId, layerNewId)
+}
 const removeLayer = (id) => {
   if (!confirm('Are you sure you want to delete this layer?')) return
   const layerIndex = layerArray.findIndex((layer) => layer.id === id)
@@ -680,6 +694,7 @@ const removeLayer = (id) => {
     set(currentLayerId, layerArray[newLayerIndex].id || layerArray[0].id)
   }
   layerArray.splice(layerIndex, 1)
+  syncLayersStructural()
 }
 
 const currentModal = ref(null)
@@ -726,6 +741,48 @@ const startAdjust = (fnOrProp, delta = 1) => {
 const stopAdjust = () => {
   clearTimeout(adjustTimeout)
   clearInterval(adjustInterval)
+}
+
+const syncLayersStructural = () => {
+  const currentIds = layerArray.map(l => l.id)
+  const currentNameMap = new Map(layerArray.map(l => [l.id, l.name]))
+
+  for (const cms in cmsLayerArray) {
+    if (cms === 'default') {
+      syncArray(cmsLayerArray['default'])
+      continue
+    }
+    for (const res in cmsLayerArray[cms]) {
+      syncArray(cmsLayerArray[cms][res])
+    }
+  }
+
+  function syncArray(arr) {
+    if (!arr) return
+
+    // Remove layers not in currentIds
+    for (let i = arr.length - 1; i >= 0; i--) {
+      if (!currentIds.includes(arr[i].id)) 
+        arr.splice(i, 1)
+    }
+
+    // Add missing layers with default props, same id and name
+    for (const id of currentIds) {
+      if (!arr.some(l => l.id === id)) {
+        const newLayer = structuredClone(layerDefault)
+        newLayer.id = id
+        newLayer.name = currentNameMap.get(id)
+        arr.push(newLayer)
+      }
+    }
+
+    // Sync names
+    for (const layer of arr)
+      layer.name = currentNameMap.get(layer.id)
+
+    // Sort to match current order
+    arr.sort((a, b) => currentIds.indexOf(a.id) - currentIds.indexOf(b.id))
+  }
 }
 </script>
 
