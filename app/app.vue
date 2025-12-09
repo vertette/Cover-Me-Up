@@ -614,13 +614,12 @@ const pasteCurrentSettings = async () => {
     newCurLayerId = fallback.id
   }
 
-  layerArray.length = 0
-  layerArray.push(...newLayers)
+  Object.assign(layerArray, newLayers)
+  console.log(layerArray)
   await nextTick()
 
   set(currentLayerId, newCurLayerId)
   pushToCmsLayerArray()
-  syncLayersStructural()
 
   if (!pasteTimeout) {
     set(pasteSuccess, true)
@@ -738,7 +737,8 @@ const stopAdjust = () => {
   clearInterval(adjustInterval)
 }
 
-const syncLayersStructural = () => {
+const syncLayersStructural = (wipeSettings = true) => {
+  if (wipeSettings) set(copiedSettings, null)
   const currentIds = layerArray.map(l => l.id)
   const currentNameMap = new Map(layerArray.map(l => [l.id, l.name]))
 
@@ -1237,8 +1237,8 @@ const syncLayersStructural = () => {
           <input
             v-show="nameInputId === layer.id"
             class="flex-1 overflow-hidden rounded-sm border-0 bg-transparent px-2 py-0.5 text-gray-200 outline-1 outline-gray-200"
-            v-on-click-outside="stopEditingName"
             @keydown.enter="stopEditingName"
+            @blur="stopEditingName"
             v-model="layer.name"
             ref="nameInputElem"
           />
