@@ -1,5 +1,4 @@
 <script setup>
-import { vOnClickOutside } from '@vueuse/components'
 import { get, set, reactiveComputed, useEventListener } from '@vueuse/core'
 import { useSortable } from '@vueuse/integrations/useSortable'
 import ListboxElem from './components/ListboxElem.vue'
@@ -27,7 +26,7 @@ const cmsResFullArray = {
     { name: 'Page background', value: '1438x810' },
     { name: 'Bundle header', value: '707x232' },
     { name: 'Community icon *', value: '184x184' },
-    { name: 'Library header capsule *', value: '920x430x' },
+    { name: 'Library header capsule *', value: '920x430_2' },
     { name: 'Library capsule *', value: '600x900' },
     { name: 'Library header *', value: '3840x1240' },
     { name: 'Library logo *', value: '1280x720' },
@@ -37,13 +36,13 @@ const cmsResFullArray = {
   gog: [
     { name: 'Logo *', value: '1600x740' },
     { name: 'Galaxy background *', value: '2560x670' },
-    { name: 'Main art banner *', value: '1600x740x' },
+    { name: 'Main art banner *', value: '1600x740_2' },
     { name: 'Product card banner *', value: '1540x270' },
     { name: 'Box *', value: '342x482' },
     { name: 'Icon round *', value: '128x128' },
-    { name: 'Icon square *', value: '128x128x' },
+    { name: 'Icon square *', value: '128x128_2' },
     { name: 'Web icon *', value: '98x98' },
-    { name: 'Galaxy banner *', value: '1540x270x' },
+    { name: 'Galaxy banner *', value: '1540x270_2' },
     { name: 'News banner *', value: '1550x490' },
     { name: 'Desktop takeover', value: '2560x360' },
     { name: 'Mobile takeover', value: '960x570' },
@@ -58,7 +57,7 @@ const cmsResFullArray = {
   itch: [{ name: 'Cover image *', value: '630x500' }],
   game_jolt: [
     { name: 'Header', value: '1920x480' },
-    { name: 'Thumbnail', value: '1920x1080' }
+    { name: 'Thumbnail', value: '1920x1080' },
   ],
   eshop_us: [
     { name: 'Game icon *', value: '1024x1024' },
@@ -68,7 +67,7 @@ const cmsResFullArray = {
     { name: 'Game icon *', value: '1024x1024' },
     { name: 'eShop Banner', value: '1920x1080' },
     { name: '2x1 *', value: '2000x1000' },
-    { name: '16x9 *', value: '1920x1080x' },
+    { name: '16x9 *', value: '1920x1080_2' },
     { name: '1x1 *', value: '1080x1080' },
     { name: 'AOC 1x1', value: '1080x1080' },
     { name: '16x9', value: '1080x1920' },
@@ -82,8 +81,9 @@ const cmsResFullArray = {
 const cmsModel = ref(cmsArray[cmsArray.length - 1]['value'])
 const cmsResModel = ref(cmsResFullArray[get(cmsModel)][0].value)
 let cmsResArray = computed(() => cmsResFullArray[get(cmsModel)])
-const cmsResModelWidth = computed(() => parseFloat(get(cmsResModel).split('x')[0]))
-const cmsResModelHeight = computed(() => parseFloat(get(cmsResModel).split('x')[1]))
+const cmsResModelClean = computed(() => get(cmsResModel).replace(/_\d+$/, ''))
+const cmsResModelWidth = computed(() => parseFloat(get(cmsResModelClean).split('x')[0]))
+const cmsResModelHeight = computed(() => parseFloat(get(cmsResModelClean).split('x')[1]))
 const cmsLayerArray = reactive({})
 const oldCmsModel = ref(get(cmsModel))
 const oldCmsResModel = ref(get(cmsResModel))
@@ -151,40 +151,40 @@ const modifyResolutions = () => {
     value: resFormElem.value.querySelectorAll('input')[index * 2 + 1].value.trim(),
   }))
 
-  // Process duplicates by appending 'x' to resolution values
+  // Process duplicates by appending '_<number>' to resolution values
   const usedValues = new Set()
   const processedResArray = newCustomResArray.map((res, index) => {
     let newValue = res.value
-    // Count the number of 'x' characters at the end of the current value
-    const currentXCount = (newValue.match(/x+$/) || [''])[0].length
-    // Base value is the resolution without trailing 'x' characters
-    const baseValue = newValue.replace(/x+$/, '')
+    // Base value is the resolution without trailing '_<number>'
+    const baseValue = newValue.replace(/_\d+$/, '')
 
     // Check for duplicates, excluding the current index
-    let maxXCount = 0
+    let maxCount = 0
     newCustomResArray.forEach((otherRes, otherIndex) => {
       if (otherIndex !== index) {
-        const otherBaseValue = otherRes.value.replace(/x+$/, '')
+        const otherBaseValue = otherRes.value.replace(/_\d+$/, '')
         if (otherBaseValue === baseValue) {
-          const xCount = (otherRes.value.match(/x+$/) || [''])[0].length
-          maxXCount = Math.max(maxXCount, xCount)
+          const match = otherRes.value.match(/_\d+$/)
+          const count = match ? parseInt(match[0].slice(1)) : 0
+          maxCount = Math.max(maxCount, count)
         }
       }
     })
 
     // Also check existing resolutions in cmsResFullArray.custom
     cmsResFullArray.custom.forEach((existingRes) => {
-      const existingBaseValue = existingRes.value.replace(/x+$/, '')
+      const existingBaseValue = existingRes.value.replace(/_\d+$/, '')
       if (existingBaseValue === baseValue) {
-        const xCount = (existingRes.value.match(/x+$/) || [''])[0].length
-        maxXCount = Math.max(maxXCount, xCount)
+        const match = existingRes.value.match(/_\d+$/)
+        const count = match ? parseInt(match[0].slice(1)) : 0
+        maxCount = Math.max(maxCount, count)
       }
     })
 
-    // If the base value is already used, append enough 'x' characters to make it unique
-    if (usedValues.has(baseValue) || maxXCount > 0) {
-      const neededXCount = maxXCount + 1
-      newValue = baseValue + 'x'.repeat(neededXCount)
+    // If the base value is already used, append '_<number>' to make it unique
+    let neededCount = maxCount + 1
+    if (usedValues.has(baseValue) || maxCount > 0) {
+      newValue = baseValue + `_${neededCount}`
     }
 
     usedValues.add(baseValue)
@@ -602,6 +602,7 @@ const pasteCurrentSettings = async () => {
   let newCurLayerId = get(currentLayerId)
   const newLayers = copiedSettings.value.map((copiedLayer) => {
     const layer = structuredClone(toRaw(copiedLayer))
+    if (typeof layer.bgImage === 'number' && (layer.bgImage < 0 || layer.bgImage >= get(imgArray).length)) layer.bgImage = false
     return layer
   })
 
