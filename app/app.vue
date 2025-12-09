@@ -514,7 +514,13 @@ const layerStyleArray = computed(() => {
 })
 const currentLayerId = ref(layerDefault.id)
 const currentLayer = reactiveComputed(() => {
-  return layerArray.find((layer) => layer.id === get(currentLayerId))
+  const foundLayer = layerArray.find((layer) => layer.id === get(currentLayerId))
+  if (!foundLayer && layerArray.length > 0) {
+    // Auto-select the first layer if the current ID is invalid
+    set(currentLayerId, layerArray[0].id)
+    return layerArray[0]
+  }
+  return foundLayer
 })
 
 const urlFormElem = useTemplateRef('urlFormElem')
@@ -586,20 +592,17 @@ const copyCurrentSettings = () => {
     }
   } else alert('Error, the copy went wrong.')
 }
-const pasteCurrentSettings = () => {
+const pasteCurrentSettings = async () => {
   if (!copiedSettings.value || currentLayer.locked) {
     alert("You shouldn't see be able to see this.")
     return
   }
   if (!confirm('This will replace all current layers with the copied ones. Continue?')) return
 
-  let newActiveId = null
+  let newCurLayerId = get(currentLayerId)
   const newLayers = copiedSettings.value.map((copiedLayer) => {
     const layer = structuredClone(toRaw(copiedLayer))
-    layer.id = Date.now() + Math.random()
     if (typeof layer.bgImage === 'number' && (layer.bgImage < 0 || layer.bgImage >= imgArray.value.length)) layer.bgImage = false
-
-    if (newActiveId === null) newActiveId = layer.id
     return layer
   })
 
@@ -608,11 +611,14 @@ const pasteCurrentSettings = () => {
     const fallback = structuredClone(layerDefault)
     fallback.id = Date.now()
     newLayers.push(fallback)
-    newActiveId = fallback.id
+    newCurLayerId = fallback.id
   }
 
-  layerArray.splice(0, layerArray.length, ...newLayers)
-  set(currentLayerId, newActiveId)
+  layerArray.length = 0
+  layerArray.push(...newLayers)
+  await nextTick()
+
+  set(currentLayerId, newCurLayerId)
   pushToCmsLayerArray()
   syncLayersStructural()
 
@@ -673,6 +679,7 @@ const addLayer = () => {
   }
   layerArray.push(layerNew)
   set(currentLayerId, layerNewId)
+  syncLayersStructural()
 }
 const removeLayer = (id) => {
   if (!confirm('Are you sure you want to delete this layer?')) return
@@ -749,10 +756,8 @@ const syncLayersStructural = () => {
     if (!arr) return
 
     // Remove layers not in currentIds
-    for (let i = arr.length - 1; i >= 0; i--) {
-      if (!currentIds.includes(arr[i].id)) 
-        arr.splice(i, 1)
-    }
+    for (let i = arr.length - 1; i >= 0; i--)
+      if (!currentIds.includes(arr[i].id)) arr.splice(i, 1)
 
     // Add missing layers with default props, same id and name
     for (const id of currentIds) {
@@ -1178,18 +1183,18 @@ const syncLayersStructural = () => {
       <ListboxElem class="flex-1" :optionArray="bgSettingsRepeatArray" v-model="currentLayer.bgImageRepeat" :disabled="currentLayer.locked" />
     </window>
     <div class="flex duration-250 ease-in-out" :class="{ 'pointer-events-none opacity-0': inPreview }">
-      <button class="rounded-r-none border-r-0" @click.left="copyCurrentSettings" tooltip="Copy this preset's layers">
+      <button class="rounded-r-none border-r-0" @click.left="copyCurrentSettings" tooltip="Copy this preset's layer settings">
         <Icon icon="mdi:content-copy" class="size-5" />
         <span class="relative hidden xl:inline">
           <span v-if="copySuccess" class="absolute left-1/2 -translate-x-1/2">Copied!</span>
-          <span :class="{ 'opacity-0': copySuccess }">Copy layers</span>
+          <span :class="{ 'opacity-0': copySuccess }">Copy settings</span>
         </span>
       </button>
-      <button class="alt relative rounded-l-none border-l-0" @click.left="pasteCurrentSettings" tooltip="Paste this preset's layers" :disabled="!copiedSettings || currentLayer.locked">
+      <button class="alt relative rounded-l-none border-l-0" @click.left="pasteCurrentSettings" tooltip="Paste this preset's layer settings" :disabled="!copiedSettings || currentLayer.locked">
         <Icon icon="mdi:content-paste" class="size-5" />
         <span class="relative hidden xl:inline">
           <span v-if="pasteSuccess" class="absolute left-1/2 -translate-x-1/2">Pasted!</span>
-          <span :class="{ 'opacity-0': pasteSuccess }">Paste layers</span>
+          <span :class="{ 'opacity-0': pasteSuccess }">Paste settings</span>
         </span>
       </button>
     </div>
