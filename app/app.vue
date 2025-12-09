@@ -602,7 +602,6 @@ const pasteCurrentSettings = async () => {
   let newCurLayerId = get(currentLayerId)
   const newLayers = copiedSettings.value.map((copiedLayer) => {
     const layer = structuredClone(toRaw(copiedLayer))
-    if (typeof layer.bgImage === 'number' && (layer.bgImage < 0 || layer.bgImage >= imgArray.value.length)) layer.bgImage = false
     return layer
   })
 
@@ -614,12 +613,12 @@ const pasteCurrentSettings = async () => {
     newCurLayerId = fallback.id
   }
 
-  Object.assign(layerArray, newLayers)
-  console.log(layerArray)
-  await nextTick()
-
+  layerArray.length = 0
+  layerArray.push(...newLayers)
+  if (!cmsLayerArray[get(cmsModel)]) cmsLayerArray[get(cmsModel)] = {}
+  cmsLayerArray[get(cmsModel)][get(cmsResModel)] = [...toRaw(layerArray)]
   set(currentLayerId, newCurLayerId)
-  pushToCmsLayerArray()
+  await nextTick()
 
   if (!pasteTimeout) {
     set(pasteSuccess, true)
@@ -739,29 +738,26 @@ const stopAdjust = () => {
 
 const syncLayersStructural = (wipeSettings = true) => {
   if (wipeSettings) set(copiedSettings, null)
-  const currentIds = layerArray.map(l => l.id)
-  const currentNameMap = new Map(layerArray.map(l => [l.id, l.name]))
+  const currentIds = layerArray.map((l) => l.id)
+  const currentNameMap = new Map(layerArray.map((l) => [l.id, l.name]))
 
   for (const cms in cmsLayerArray) {
     if (cms === 'default') {
       syncArray(cmsLayerArray['default'])
       continue
     }
-    for (const res in cmsLayerArray[cms]) {
-      syncArray(cmsLayerArray[cms][res])
-    }
+    for (const res in cmsLayerArray[cms]) syncArray(cmsLayerArray[cms][res])
   }
 
   function syncArray(arr) {
     if (!arr) return
 
     // Remove layers not in currentIds
-    for (let i = arr.length - 1; i >= 0; i--)
-      if (!currentIds.includes(arr[i].id)) arr.splice(i, 1)
+    for (let i = arr.length - 1; i >= 0; i--) if (!currentIds.includes(arr[i].id)) arr.splice(i, 1)
 
     // Add missing layers with default props, same id and name
     for (const id of currentIds) {
-      if (!arr.some(l => l.id === id)) {
+      if (!arr.some((l) => l.id === id)) {
         const newLayer = structuredClone(layerDefault)
         newLayer.id = id
         newLayer.name = currentNameMap.get(id)
