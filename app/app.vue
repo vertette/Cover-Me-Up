@@ -8,7 +8,6 @@ import JSZip from 'jszip'
 
 const cmsArray = [
   { name: 'Custom', value: 'custom' },
-  { name: 'Game Jolt', value: 'game_jolt' },
   { name: 'GOG', value: 'gog' },
   { name: 'Itch.io', value: 'itch' },
   /* { name: 'Nintendo eShop (US)', value: 'eshop_us' },
