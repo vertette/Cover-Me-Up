@@ -55,10 +55,6 @@ const cmsResFullArray = {
     { name: 'X (Twitter) post', value: '1200x675' },
   ],
   itch: [{ name: 'Cover image *', value: '630x500' }],
-  game_jolt: [
-    { name: 'Header', value: '1920x480' },
-    { name: 'Thumbnail', value: '1920x1080' },
-  ],
   eshop_us: [
     { name: 'Game icon *', value: '1024x1024' },
     { name: 'eShop Banner', value: '1920x1080' },
@@ -836,15 +832,15 @@ const syncLayersStructural = (wipeSettings = true) => {
         <span class="font-bold">About <em>Cover Me Up</em></span>
         <div class="flex flex-col gap-2 2xl:gap-4">
           <p>
-            <em>Cover Me Up</em> is a web application that lets you quickly create art assets for products sold on online stores such as Steam or GOG. In contrast to normal photo editors,
-            <em>Cover Me Up</em> is built for quick and easy editing for assets that need to be exported to multiple kinds of resolutions. No constant fussing with layer positions or canvas sizes.
+            <em>Cover Me Up</em> is a web application that lets you quickly create and export art assets for products sold on online stores such as Steam, Itch or GOG. In contrast to standard photo editors,
+            <em>Cover Me Up</em> is built for quick and easy editing for assets that need to be exported to dozens of different resolutions. No constant fussing with layer positions or canvas sizes.
           </p>
           <p>
             Presets are divided by platform and resolution. Each resolution with an asterisk is a required asset, and each newly selected resolution will reuse the settings of the previous one, though
             changing them after that will not change other presets. Make sure to check if your assets look correct before you export them all!
           </p>
           <p>
-            <em>Cover Me Up</em> is built by Vertette. Annoy him with your feedback or bug reports online <a href="https://x.com/Vertette" target="_blank"> on Twitter</a> or
+            <em>Cover Me Up</em> is built by Vertette. You can send him your feedback or bug reports online <a href="https://x.com/Vertette" target="_blank"> on Twitter</a> or
             <a href="mailto:vertettegd.com">through an e-mail</a>.
           </p>
           <div class="flex justify-end gap-4">
