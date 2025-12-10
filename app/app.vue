@@ -979,7 +979,7 @@ const syncLayersStructural = (wipeSettings = true) => {
           :key="layer.id"
         ></figure>
       </TransitionGroup>
-      <div v-show="gridSettings.visible && !inPreview" class="pointer-events-none absolute inset-0 top-0 left-0 z-50 transition-opacity">
+      <div v-show="gridSettings.visible && !inPreview" class="pointer-events-none absolute inset-0 top-0 left-0 z-50">
         <div
           v-for="col in gridSettings.columns - 1"
           :style="`left: ${(col / gridSettings.columns) * 100}%; opacity: ${gridSettings.opacity}%;`"
