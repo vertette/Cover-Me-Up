@@ -122,7 +122,8 @@ useEventListener(window, 'resize', () => {
 
 const gridSettings = reactive({
   visible: true,
-  opacity: 25,
+  color: "White",
+  opacity: 0.25,
   columns: 3,
   rows: 3,
 })
@@ -860,13 +861,23 @@ const syncLayersStructural = (wipeSettings = true) => {
         <span class="font-bold">Modify the grid settings</span>
         <form class="flex flex-col gap-4" @submit.prevent="setModal()">
           <div class="flex flex-row gap-2 2xl:gap-4">
-            <div class="flex flex-1 flex-col gap-4">
+            <div class="flex flex-1 flex-col gap-2 2xl:gap-4">
               <label for="grid-columns">Columns</label>
               <input id="grid-columns" type="number" min="1" max="16" v-model.number="gridSettings.columns" />
             </div>
-            <div class="flex flex-1 flex-col gap-4">
+            <div class="flex flex-1 flex-col gap-2 2xl:gap-4">
               <label for="grid-rows" class="flex-1">Rows</label>
               <input id="grid-rows" type="number" min="1" max="116" v-model.number="gridSettings.rows" />
+            </div>
+          </div>
+          <div class="flex flex-row gap-2 2xl:gap-4">
+            <div class="flex flex-1 flex-col gap-2 2xl:gap-4">
+              <label><a href="https://css-tricks.com/almanac/functions/c/color/" target="_blank">Color</a></label>
+              <input id="grid-color" v-model.number="gridSettings.color" />
+            </div>
+            <div class="flex flex-1 flex-col gap-2 2xl:gap-4">
+              <label>Opacity (0 to 1)</label>
+              <input id="grid-opacity" v-model.number="gridSettings.opacity" />
             </div>
           </div>
           <div class="flex justify-between gap-4 pt-2">
@@ -902,7 +913,7 @@ const syncLayersStructural = (wipeSettings = true) => {
     </div>
     <div class="mr-auto ml-auto xl:absolute xl:left-1/2 xl:-translate-x-1/2">
       <div class="flex gap-2 xl:gap-4">
-        <button class="alt" @click.left="setModal('gridModal')" tooltip="Adjust the grid">
+        <button class="alt transition-opacity" :class="{ 'opacity-0': inPreview }" @click.left="setModal('gridModal')" tooltip="Adjust the grid">
           <Icon icon="mdi:grid" class="size-5" />
           <span class="hidden xl:inline">Grid</span>
         </button>
@@ -982,14 +993,14 @@ const syncLayersStructural = (wipeSettings = true) => {
       <div v-show="gridSettings.visible && !inPreview" class="pointer-events-none absolute inset-0 top-0 left-0 z-50">
         <div
           v-for="col in gridSettings.columns - 1"
-          :style="`left: ${(col / gridSettings.columns) * 100}%; opacity: ${gridSettings.opacity}%;`"
-          class="absolute top-0 h-full w-[1px] bg-white"
+          :style="`left: ${(col / gridSettings.columns) * 100}%; opacity: ${gridSettings.opacity}; background-color: ${gridSettings.color}`"
+          class="absolute top-0 h-full w-[1px]"
           :key="col"
         ></div>
         <div
           v-for="row in gridSettings.rows - 1"
-          :style="`top: ${(row / gridSettings.rows) * 100}%; opacity: ${gridSettings.opacity}%;`"
-          class="absolute left-0 h-[1px] w-full bg-white"
+          :style="`top: ${(row / gridSettings.rows) * 100}%; opacity: ${gridSettings.opacity}; background-color: ${gridSettings.color}`"
+          class="absolute left-0 h-[1px] w-full"
           :key="row"
         ></div>
       </div>

@@ -110,7 +110,7 @@
 
   checkbox::before,
   checkbox::after {
-    @apply absolute w-[1px] h-[150%] bg-white left-1/2 -translate-x-1/2 -translate-y-1/5 origin-center -rotate-45
+    @apply absolute w-[1px] h-[150%] bg-white left-1/2 -translate-x-1/2 -translate-y-1/6 origin-center -rotate-45
   }
 
   checkbox::after {
