@@ -1211,9 +1211,9 @@ const syncLayersStructural = (wipeSettings = true) => {
         </div>
       </div>
       <div class="flex items-center gap-x-1">
-        <label for="width"><a href="https://css-tricks.com/almanac/properties/b/background-size/" target="_blank">Background width</a></label>
+        <label for="width"><a href="https://css-tricks.com/almanac/properties/w/width/" target="_blank">Background width</a></label>
         <button class="transparent smallest invisible h-0"></button>
-        <label for="height"><a href="https://css-tricks.com/almanac/properties/b/background-size/" target="_blank">Background height</a></label>
+        <label for="height"><a href="https://css-tricks.com/almanac/properties/h/height/" target="_blank">Background height</a></label>
       </div>
       <div class="flex items-center gap-x-1">
         <div class="flex w-full">
