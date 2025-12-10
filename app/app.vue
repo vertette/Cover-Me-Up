@@ -855,6 +855,39 @@ const syncLayersStructural = (wipeSettings = true) => {
           </div>
         </form>
       </window>
+      <window v-if="currentModal === 'gridModal'" class="fixed top-1/2 left-1/2 w-[min(420px,40vw)] -translate-1/2 shadow-2xl">
+        <span class="font-bold">Modify the grid settings</span>
+        <form class="flex flex-col gap-4" @submit.prevent="setModal()">
+          <div class="flex flex-row gap-2 2xl:gap-4">
+            <div class="flex flex-1 flex-col gap-2 2xl:gap-4">
+              <label for="grid-columns">Columns</label>
+              <input id="grid-columns" type="number" min="1" max="16" v-model.number="gridSettings.columns" />
+            </div>
+            <div class="flex flex-1 flex-col gap-2 2xl:gap-4">
+              <label for="grid-rows" class="flex-1">Rows</label>
+              <input id="grid-rows" type="number" min="1" max="116" v-model.number="gridSettings.rows" />
+            </div>
+          </div>
+          <div class="flex flex-row gap-2 2xl:gap-4">
+            <div class="flex flex-1 flex-col gap-2 2xl:gap-4">
+              <label><a href="https://css-tricks.com/almanac/properties/b/background/" target="_blank">Color</a></label>
+              <input id="grid-color" v-model.number="gridSettings.color" />
+            </div>
+            <div class="flex flex-1 flex-col gap-2 2xl:gap-4">
+              <label><a href="https://css-tricks.com/almanac/properties/o/opacity/" target="_blank">Opacity</a></label>
+              <input id="grid-opacity" pattern="(?:0(?:\.\d+)?)|1" v-model.number="gridSettings.opacity" />
+            </div>
+          </div>
+          <div class="flex justify-between gap-4 pt-2">
+            <div class="flex items-center">
+              <CheckboxElem v-model="gridSettings.visible" :label="'Visible'" />
+            </div>
+            <button class="alt" @click.prevent.left="setModal()">
+              <span>Close</span>
+            </button>
+          </div>
+        </form>
+      </window>
       <window v-if="currentModal === 'aboutModal'" class="fixed top-1/2 left-1/2 w-[min(512px,50vw)] -translate-1/2 shadow-2xl">
         <span class="font-bold">About <em>Cover Me Up</em></span>
         <div class="flex flex-col gap-2 2xl:gap-4">
@@ -877,39 +910,6 @@ const syncLayersStructural = (wipeSettings = true) => {
             </button>
           </div>
         </div>
-      </window>
-      <window v-if="currentModal === 'gridModal'" class="fixed top-1/2 left-1/2 w-[min(420px,40vw)] -translate-1/2 shadow-2xl">
-        <span class="font-bold">Modify the grid settings</span>
-        <form class="flex flex-col gap-4" @submit.prevent="setModal()">
-          <div class="flex flex-row gap-2 2xl:gap-4">
-            <div class="flex flex-1 flex-col gap-2 2xl:gap-4">
-              <label for="grid-columns">Columns</label>
-              <input id="grid-columns" type="number" min="1" max="16" v-model.number="gridSettings.columns" />
-            </div>
-            <div class="flex flex-1 flex-col gap-2 2xl:gap-4">
-              <label for="grid-rows" class="flex-1">Rows</label>
-              <input id="grid-rows" type="number" min="1" max="116" v-model.number="gridSettings.rows" />
-            </div>
-          </div>
-          <div class="flex flex-row gap-2 2xl:gap-4">
-            <div class="flex flex-1 flex-col gap-2 2xl:gap-4">
-              <label><a href="https://css-tricks.com/almanac/functions/c/color/" target="_blank">Color</a></label>
-              <input id="grid-color" v-model.number="gridSettings.color" />
-            </div>
-            <div class="flex flex-1 flex-col gap-2 2xl:gap-4">
-              <label>Opacity (0 to 1)</label>
-              <input id="grid-opacity" v-model.number="gridSettings.opacity" />
-            </div>
-          </div>
-          <div class="flex justify-between gap-4 pt-2">
-            <div class="flex items-center">
-              <CheckboxElem v-model="gridSettings.visible" :label="'Visible'" />
-            </div>
-            <button class="alt" @click.prevent.left="setModal()">
-              <span>Close</span>
-            </button>
-          </div>
-        </form>
       </window>
     </TransitionGroup>
   </div>
