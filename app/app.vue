@@ -120,14 +120,6 @@ useEventListener(window, 'resize', () => {
   calculateResponsiveZoomScale()
 })
 
-const gridSettings = reactive({
-  visible: true,
-  color: "White",
-  opacity: 0.25,
-  columns: 3,
-  rows: 3,
-})
-
 const resFormElem = useTemplateRef('resFormElem')
 const isValidForm = (formElem) => {
   if (!get(formElem)) return
@@ -235,6 +227,14 @@ const openInfoLink = () => {
   }
   downloadFile(infoLinkObject[get(cmsModel)], null, false)
 }
+
+const gridSettings = reactive({
+  visible: true,
+  color: "White",
+  opacity: 0.25,
+  columns: 3,
+  rows: 3,
+})
 
 const zoomScale = ref(100)
 const setZoomScale = (add) => {
@@ -444,11 +444,12 @@ const exportImage = async (kind) => {
   set(isExporting, false)
 }
 
-const bgSettingsRepeatArray = [
-  { name: "Don't repeat", value: 'no-repeat' },
-  { name: 'Repeat horizontally', value: 'repeat-x' },
-  { name: 'Repeat vertically', value: 'repeat-y' },
-  { name: 'Repeat both directions', value: 'repeat' },
+const bgSettingsFitArray = [
+  { name: "None", value: 'none' },
+  { name: "Fill", value: 'fill' },
+  { name: 'Contain', value: 'contain' },
+  { name: 'Cover', value: 'cover' },
+  { name: 'Scale down', value: 'scale-down' },
 ]
 const bgSettingsBlendArray = [
   { name: 'Normal', value: 'normal' },
@@ -472,12 +473,12 @@ const layerDefault = {
   id: Date.now(),
   name: 'Layer #1',
   displayNone: false,
-  bgImageRepeat: 'no-repeat',
+  bgImageFit: 'fill',
   bgBlendMode: 'normal',
   bgImageHorSize: '100%',
   bgImageHorPos: '50%',
   bgImageVerSize: 'auto',
-  bgImageVerPos: '100%',
+  bgImageVerPos: '50%',
   bgOpacity: null,
   bgHorFlip: false,
   bgVerFlip: false,
@@ -492,28 +493,53 @@ const layerDefault = {
 }
 const layerArray = reactive([structuredClone(layerDefault)])
 const layerStyleArray = computed(() => {
-  const array = []
+  const figureArray = []
+  const imageArray = []
 
   for (let i = 0; i < get(layerArray).length; i++) {
     const layer = get(layerArray)[i]
-    let str = ``
 
-    if (layer.displayNone) str += `display: none; `
-    if (layer.bgColor) layer.bgGradient ? (str += `background-color: transparent; `) : (str += `background-color: ${layer.bgColor}; `)
-    if (layer.bgGradient) str += `background-image: linear-gradient(${layer.bgGradientDeg}deg in oklab, ${layer.bgGradientFrom}, ${layer.bgGradientTo}); `
-    else if (layer.bgImage !== false) str += `background-image: url(${get(imgArray)[layer.bgImage]}); `
-    if (layer.bgImageHorPos) str += `background-position-x: calc(${layer.bgHorFlip ? `100% - ` : ``}${layer.bgImageHorPos}); `
-    if (layer.bgImageVerPos) str += `background-position-y: calc(${layer.bgVerFlip ? `100% - ` : ``}${layer.bgImageVerPos}); `
-    if (layer.bgImageRepeat) str += `background-repeat: ${layer.bgImageRepeat}; `
-    if (layer.bgImageHorSize && layer.bgImageVerSize) str += `background-size: ${layer.bgImageHorSize} ${layer.bgImageVerSize}; `
-    if (layer.bgBlendMode) str += `mix-blend-mode: ${layer.bgBlendMode}; `
-    str += `scale: ${layer.bgHorFlip ? -1 : 1} ${layer.bgVerFlip ? -1 : 1}; `
-    if (layer.bgOpacity && layer.bgOpacity < 100) str += `opacity: ${parseFloat(layer.bgOpacity / 100)}; `
-    if (layer.bgRotate % 360 !== 0) str += `rotate: ${layer.bgRotate}deg; `
-    array.push(str)
+    // Figure style (background color, gradient, or fallback tiled image)
+    const fig = {}
+    if (layer.displayNone) fig.display = 'none'
+    if (layer.bgColor && !layer.bgGradient) fig.backgroundColor = layer.bgColor
+    else fig.backgroundColor = 'transparent'
+    if (layer.bgGradient) {
+      fig.backgroundImage = `linear-gradient(${layer.bgGradientDeg}deg in oklab, ${layer.bgGradientFrom}, ${layer.bgGradientTo})`
+    }
+
+    // Image element style
+    const img = {}
+    if (layer.bgImage === false) img.display = 'none'
+    else {
+      img.position = 'absolute'
+      // We'll use left/top with translate(-50%, -50%) to emulate background-position centering behavior
+      if (layer.bgImageHorPos) img.left = `calc(${layer.bgHorFlip ? `100% - ` : ''}${layer.bgImageHorPos})`
+      else img.left = '50%'
+      if (layer.bgImageVerPos) img.top = `calc(${layer.bgVerFlip ? `100% - ` : ''}${layer.bgImageVerPos})`
+      else img.top = '50%'
+
+      const scaleX = layer.bgHorFlip ? -1 : 1
+      const scaleY = layer.bgVerFlip ? -1 : 1
+      const rotate = (layer.bgRotate % 360) !== 0 ? `rotate(${layer.bgRotate}deg)` : ''
+      img.transform = `translate(-50%,-50%) scale(${scaleX}, ${scaleY})${rotate}`
+      img.transformOrigin = 'center center'
+
+      if (layer.bgImageHorSize && layer.bgImageHorSize !== 'auto') img.width = layer.bgImageHorSize
+      else img.width = 'auto'
+      if (layer.bgImageVerSize && layer.bgImageVerSize !== 'auto') img.height = layer.bgImageVerSize
+      else img.height = 'auto'
+
+      if (layer.bgOpacity && layer.bgOpacity < 100) img.opacity = parseFloat(layer.bgOpacity / 100)
+      if (layer.bgBlendMode) img.mixBlendMode = layer.bgBlendMode
+      if (layer.bgImageFit) img.objectFit = layer.bgImageFit
+    }
+
+    figureArray.push(fig)
+    imageArray.push(img)
   }
 
-  return array
+  return { figure: figureArray, image: imageArray }
 })
 const currentLayerId = ref(layerDefault.id)
 const currentLayer = reactiveComputed(() => {
@@ -985,10 +1011,19 @@ const syncLayersStructural = (wipeSettings = true) => {
         <figure
           v-for="(layer, index) in layerArray"
           :class="{ 'transition-[background-size,_background-color,_background-position]': !isExporting }"
-          class="absolute h-full w-full interpolate-keywords"
-          :style="layerStyleArray[index]"
+          class="!pointer-events-none absolute h-full w-full interpolate-keywords"
+          :style="layerStyleArray.figure[index]"
           :key="layer.id"
-        ></figure>
+        >
+          <img
+            v-if="layer.bgImage !== false"
+            class="user-select-none block transition-all interpolate-keywords"
+            :style="layerStyleArray.image[index]"
+            :src="imgArray[layer.bgImage]"
+            draggable="false"
+            alt=""
+          />
+        </figure>
       </TransitionGroup>
       <div v-show="gridSettings.visible && !inPreview" class="pointer-events-none absolute inset-0 top-0 left-0 z-50">
         <div
@@ -1240,7 +1275,7 @@ const syncLayersStructural = (wipeSettings = true) => {
           </button>
         </div>
       </div>
-      <ListboxElem class="flex-1" :optionArray="bgSettingsRepeatArray" v-model="currentLayer.bgImageRepeat" :disabled="currentLayer.locked" />
+      <ListboxElem class="flex-1" :optionArray="bgSettingsFitArray" v-model="currentLayer.bgImageFit" :disabled="currentLayer.locked" />
     </window>
     <div class="flex duration-250 ease-in-out" :class="{ 'pointer-events-none opacity-0': inPreview }">
       <button class="rounded-r-none border-r-0" @click.left="copyCurrentSettings" tooltip="Copy this preset's layer settings">
