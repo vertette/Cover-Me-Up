@@ -146,61 +146,58 @@ const modifyResolutions = () => {
     value: resFormElem.value.querySelectorAll('input')[index * 2 + 1].value.trim(),
   }))
 
-  // Process duplicates by appending '_<number>' to resolution values
-  const usedValues = new Set()
-  const processedResArray = newCustomResArray.map((res, index) => {
-    let newValue = res.value
-    // Base value is the resolution without trailing '_<number>'
-    const baseValue = newValue.replace(/_\d+$/, '')
+  // collect all currently used base values (e.g. "256x256") and track highest suffix
+  const counterMap = new Map()
 
-    // Check for duplicates, excluding the current index
-    let maxCount = 0
-    newCustomResArray.forEach((otherRes, otherIndex) => {
-      if (otherIndex !== index) {
-        const otherBaseValue = otherRes.value.replace(/_\d+$/, '')
-        if (otherBaseValue === baseValue) {
-          const match = otherRes.value.match(/_\d+$/)
-          const count = match ? parseInt(match[0].slice(1)) : 0
-          maxCount = Math.max(maxCount, count)
-        }
-      }
-    })
-
-    // Also check existing resolutions in cmsResFullArray.custom
-    cmsResFullArray.custom.forEach((existingRes) => {
-      const existingBaseValue = existingRes.value.replace(/_\d+$/, '')
-      if (existingBaseValue === baseValue) {
-        const match = existingRes.value.match(/_\d+$/)
-        const count = match ? parseInt(match[0].slice(1)) : 0
-        maxCount = Math.max(maxCount, count)
-      }
-    })
-
-    // If the base value is already used, append '_<number>' to make it unique
-    let neededCount = maxCount + 1
-    if (usedValues.has(baseValue) || maxCount > 0) {
-      newValue = baseValue + `_${neededCount}`
-    }
-
-    usedValues.add(baseValue)
-    return { name: res.name, value: newValue }
+  // scan existing cmsResFullArray.custom for counters
+  cmsResFullArray.custom.forEach((res) => {
+    const match = res.value.match(/^(.+?)_\d+$/)
+    if (match) {
+      const base = match[1]
+      const num = parseInt(res.value.match(/_(\d+)$/)[1])
+      if (!counterMap.has(base) || counterMap.get(base) < num) counterMap.set(base, num)
+    } else counterMap.set(res.value, 0) // plain value exists
   })
 
-  cmsResFullArray.custom = processedResArray
-  const currentResValue = get(cmsResModel)
-  const resolutionExists = processedResArray.some((res) => res.value === currentResValue)
+  // process new entries, assign unique values with proper incrementing
+  const finalResolutions = newCustomResArray.map((res) => {
+    const baseValue = res.value.replace(/_\d+$/, '') // strip any existing _N
+    const currentMax = counterMap.get(baseValue) || 0
 
-  if (!resolutionExists && get(cmsModel) === 'custom') set(cmsResModel, processedResArray[0].value)
+    let finalValue
+    if (currentMax === 0 && !counterMap.has(baseValue)) {
+      // use clean value
+      finalValue = baseValue
+      counterMap.set(baseValue, 0)
+    } else {
+      // use next number
+      const nextNum = currentMax + 1
+      finalValue = `${baseValue}_${nextNum}`
+      counterMap.set(baseValue, nextNum)
+    }
+
+    return { name: res.name, value: finalValue }
+  })
+
+  // update the custom resolutions
+  cmsResFullArray.custom = finalResolutions
+
+  // fix current selection if needed
+  const currentResValue = get(cmsResModel)
+  const stillExists = finalResolutions.some((res) => res.value === currentResValue)
+  if (!stillExists && get(cmsModel) === 'custom') set(cmsResModel, finalResolutions[0].value)
+
+  // clean up deleted resolutions from saved layers
   if (cmsLayerArray['custom']) {
-    const validResolutions = processedResArray.map((res) => res.value)
-    for (const res of Object.keys(cmsLayerArray['custom'])) {
-      if (!validResolutions.includes(res)) {
-        delete cmsLayerArray['custom'][res]
+    const validValues = finalResolutions.map((r) => r.value)
+    for (const resKey of Object.keys(cmsLayerArray['custom'])) {
+      if (!validValues.includes(resKey)) {
+        delete cmsLayerArray['custom'][resKey]
       }
     }
   }
 
-  // Update cmsResArray to reflect changes
+  // refresh computed
   cmsResArray = computed(() => cmsResFullArray[get(cmsModel)])
 
   pushToCmsLayerArray()
@@ -213,7 +210,6 @@ const addResolution = () => {
 }
 const removeResolution = (index) => {
   if (confirm('Are you sure you want to delete this resolution?')) {
-    // remove this resolution from layerArray
     const newResArray = get(cmsCustomResArray).slice(0, index)
     set(cmsCustomResArray, newResArray)
   }
@@ -230,7 +226,7 @@ const openInfoLink = () => {
 
 const gridSettings = reactive({
   visible: true,
-  color: "White",
+  color: 'White',
   opacity: 0.25,
   columns: 3,
   rows: 3,
@@ -445,8 +441,8 @@ const exportImage = async (kind) => {
 }
 
 const bgSettingsFitArray = [
-  { name: "None", value: 'none' },
-  { name: "Fill", value: 'fill' },
+  { name: 'None', value: 'none' },
+  { name: 'Fill', value: 'fill' },
   { name: 'Contain', value: 'contain' },
   { name: 'Cover', value: 'cover' },
   { name: 'Scale down', value: 'scale-down' },
@@ -499,7 +495,7 @@ const layerStyleArray = computed(() => {
   for (let i = 0; i < get(layerArray).length; i++) {
     const layer = get(layerArray)[i]
 
-    // Figure style (background color, gradient, or fallback tiled image)
+    // figure style (background color, gradient, or fallback tiled image)
     const fig = {}
     if (layer.displayNone) fig.display = 'none'
     if (layer.bgColor && !layer.bgGradient) fig.backgroundColor = layer.bgColor
@@ -508,12 +504,12 @@ const layerStyleArray = computed(() => {
       fig.backgroundImage = `linear-gradient(${layer.bgGradientDeg}deg in oklab, ${layer.bgGradientFrom}, ${layer.bgGradientTo})`
     }
 
-    // Image element style
+    // image element style
     const img = {}
     if (layer.bgImage === false) img.display = 'none'
     else {
       img.position = 'absolute'
-      // We'll use left/top with translate(-50%, -50%) to emulate background-position centering behavior
+      // left/top with translate(-50%, -50%) to emulate background-position centering behavior
       if (layer.bgImageHorPos) img.left = `calc(${layer.bgHorFlip ? `100% - ` : ''}${layer.bgImageHorPos})`
       else img.left = '50%'
       if (layer.bgImageVerPos) img.top = `calc(${layer.bgVerFlip ? `100% - ` : ''}${layer.bgImageVerPos})`
@@ -521,7 +517,7 @@ const layerStyleArray = computed(() => {
 
       const scaleX = layer.bgHorFlip ? -1 : 1
       const scaleY = layer.bgVerFlip ? -1 : 1
-      const rotate = (layer.bgRotate % 360) !== 0 ? `rotate(${layer.bgRotate}deg)` : ''
+      const rotate = layer.bgRotate % 360 !== 0 ? `rotate(${layer.bgRotate}deg)` : ''
       img.transform = `translate(-50%,-50%) scale(${scaleX}, ${scaleY})${rotate}`
       img.transformOrigin = 'center center'
 
@@ -545,7 +541,7 @@ const currentLayerId = ref(layerDefault.id)
 const currentLayer = reactiveComputed(() => {
   const foundLayer = layerArray.find((layer) => layer.id === get(currentLayerId))
   if (!foundLayer && layerArray.length > 0) {
-    // Auto-select the first layer if the current ID is invalid
+    // auto-select the first layer if the current ID is invalid
     set(currentLayerId, layerArray[0].id)
     return layerArray[0]
   }
@@ -635,7 +631,7 @@ const pasteCurrentSettings = async () => {
     return layer
   })
 
-  // If the copy was somehow empty, fall back to a single default layer
+  // if the copy was somehow empty, fall back to a single default layer
   if (newLayers.length === 0) {
     const fallback = structuredClone(layerDefault)
     fallback.id = Date.now()
@@ -728,7 +724,8 @@ const setModal = (modal = null) => {
   }
   if (modal === 'resModal') {
     const cmsResTempArray = structuredClone(cmsResFullArray.custom)
-    // remove all the x's at the end of every value
+    // don't display the digits at the end of every value
+    cmsResTempArray.forEach((res) => (res.value = res.value.replace(/_\d+$/im, '')))
     set(cmsCustomResArray, structuredClone(cmsResTempArray))
   }
   set(currentModal, modal)
@@ -782,10 +779,10 @@ const syncLayersStructural = (wipeSettings = true) => {
   function syncArray(arr) {
     if (!arr) return
 
-    // Remove layers not in currentIds
+    // remove layers not in currentIds
     for (let i = arr.length - 1; i >= 0; i--) if (!currentIds.includes(arr[i].id)) arr.splice(i, 1)
 
-    // Add missing layers with default props, same id and name
+    // add missing layers with default props, same id and name
     for (const id of currentIds) {
       if (!arr.some((l) => l.id === id)) {
         const newLayer = structuredClone(layerDefault)
@@ -795,10 +792,8 @@ const syncLayersStructural = (wipeSettings = true) => {
       }
     }
 
-    // Sync names
+    // sync names and sort to match current order
     for (const layer of arr) layer.name = currentNameMap.get(layer.id)
-
-    // Sort to match current order
     arr.sort((a, b) => currentIds.indexOf(a.id) - currentIds.indexOf(b.id))
   }
 }
@@ -839,7 +834,7 @@ const syncLayersStructural = (wipeSettings = true) => {
             <button class="transparent" @click.prevent.left="setModal()">
               <span>Cancel</span>
             </button>
-            <button class="transparent" type="submit">
+            <button class="alt" type="submit">
               <span>Save</span>
             </button>
           </div>
