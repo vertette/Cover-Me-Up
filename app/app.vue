@@ -1012,7 +1012,7 @@ const syncLayersStructural = (wipeSettings = true) => {
         >
           <img
             v-if="layer.bgImage !== false"
-            class="block transition-all interpolate-keywords"
+            class="block max-h-[unset] max-w-[unset] transition-all interpolate-keywords"
             :style="layerStyleArray.image[index]"
             :src="imgArray[layer.bgImage]"
             draggable="false"
@@ -1316,7 +1316,7 @@ const syncLayersStructural = (wipeSettings = true) => {
           <figure class="pointer-events-none !block size-12 overflow-hidden rounded-lg border-1 border-slate-300 bg-slate-800" :style="layerStyleArray[index]">
             <img
               v-if="layer.bgImage !== false"
-              class="!relative block transition-all interpolate-keywords"
+              class="!relative block max-h-[unset] max-w-[unset] transition-all interpolate-keywords"
               :style="layerStyleArray.image[index]"
               :src="imgArray[layer.bgImage]"
               draggable="false"
