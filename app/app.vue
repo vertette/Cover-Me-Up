@@ -1012,11 +1012,10 @@ const syncLayersStructural = (wipeSettings = true) => {
         >
           <img
             v-if="layer.bgImage !== false"
-            class="user-select-none block transition-all interpolate-keywords"
+            class="block transition-all interpolate-keywords"
             :style="layerStyleArray.image[index]"
             :src="imgArray[layer.bgImage]"
             draggable="false"
-            alt=""
           />
         </figure>
       </TransitionGroup>
@@ -1314,7 +1313,15 @@ const syncLayersStructural = (wipeSettings = true) => {
             <Icon v-if="!layer.displayNone" icon="mdi:eye" />
             <Icon v-else icon="mdi:eye-off" />
           </button>
-          <figure class="pointer-events-none !block size-12 rounded-lg border-1 border-slate-300 bg-slate-800 !bg-cover !bg-center" :style="layerStyleArray[index]"></figure>
+          <figure class="pointer-events-none !block size-12 overflow-hidden rounded-lg border-1 border-slate-300 bg-slate-800" :style="layerStyleArray[index]">
+            <img
+              v-if="layer.bgImage !== false"
+              class="!relative block transition-all interpolate-keywords"
+              :style="layerStyleArray.image[index]"
+              :src="imgArray[layer.bgImage]"
+              draggable="false"
+            />
+          </figure>
           <span
             v-show="nameInputId !== layer.id"
             class="flex-1 truncate overflow-hidden rounded-sm border border-transparent bg-transparent px-2 py-0.5 text-sm text-gray-200 hover:opacity-50 2xl:text-base"
