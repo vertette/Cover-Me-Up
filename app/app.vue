@@ -673,9 +673,13 @@ useSortable(layerArrayWrapper, layerArray, {
 const onDragStart = () => {
   set(isDragging, false)
 }
-const onDragEnd = () => {
+const onDragEnd = async (event) => {
   set(isDragging, false)
   syncLayersStructural()
+  await nextTick()
+
+  const newCurLayerId = get(layerArray)[event.newIndex].id
+  if (newCurLayerId) set(currentLayerId, newCurLayerId)
 }
 
 const nameInputElem = useTemplateRef('nameInputElem')
