@@ -104,6 +104,28 @@
     @apply text-gray-300/50;
   }
 
+  checkbox {
+    @apply relative size-4 border border-white
+  }
+
+  checkbox::before,
+  checkbox::after {
+    @apply absolute w-[1px] h-[150%] bg-white left-1/2 -translate-x-1/2 -translate-y-1/5 origin-center -rotate-45
+  }
+
+  checkbox::after {
+    @apply !rotate-45
+  }
+
+  checkbox.active::before,
+  checkbox.active::after {
+    @apply content-[''];
+  }
+
+  checkbox+label {
+    @apply pl-2 leading-4
+  }
+
   listbox {
     @apply relative cursor-pointer rounded-lg border-1 border-gray-300 bg-slate-800 transition-all select-none;
   }

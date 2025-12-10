@@ -120,6 +120,13 @@ useEventListener(window, 'resize', () => {
   calculateResponsiveZoomScale()
 })
 
+const gridSettings = reactive({
+  visible: true,
+  opacity: 25,
+  columns: 3,
+  rows: 3,
+})
+
 const resFormElem = useTemplateRef('resFormElem')
 const isValidForm = (formElem) => {
   if (!get(formElem)) return
@@ -762,8 +769,7 @@ const syncLayersStructural = (wipeSettings = true) => {
     }
 
     // Sync names
-    for (const layer of arr)
-      layer.name = currentNameMap.get(layer.id)
+    for (const layer of arr) layer.name = currentNameMap.get(layer.id)
 
     // Sort to match current order
     arr.sort((a, b) => currentIds.indexOf(a.id) - currentIds.indexOf(b.id))
@@ -806,7 +812,7 @@ const syncLayersStructural = (wipeSettings = true) => {
             <button class="transparent" @click.prevent.left="setModal()">
               <span>Cancel</span>
             </button>
-            <button class="alt" type="submit">
+            <button class="transparent" type="submit">
               <span>Save</span>
             </button>
           </div>
@@ -831,8 +837,9 @@ const syncLayersStructural = (wipeSettings = true) => {
         <span class="font-bold">About <em>Cover Me Up</em></span>
         <div class="flex flex-col gap-2 2xl:gap-4">
           <p>
-            <em>Cover Me Up</em> is a web application that lets you quickly create and export art assets for products sold on online stores such as Steam, Itch or GOG. In contrast to standard photo editors,
-            <em>Cover Me Up</em> is built for quick and easy editing for assets that need to be exported to dozens of different resolutions. No constant fussing with layer positions or canvas sizes.
+            <em>Cover Me Up</em> is a web application that lets you quickly create and export art assets for products sold on online stores such as Steam, Itch or GOG. In contrast to standard photo
+            editors, <em>Cover Me Up</em> is built for quick and easy editing for assets that need to be exported to dozens of different resolutions. No constant fussing with layer positions or canvas
+            sizes.
           </p>
           <p>
             Presets are divided by platform and resolution. Each resolution with an asterisk is a required asset, and each newly selected resolution will reuse the settings of the previous one, though
@@ -848,6 +855,29 @@ const syncLayersStructural = (wipeSettings = true) => {
             </button>
           </div>
         </div>
+      </window>
+      <window v-if="currentModal === 'gridModal'" class="fixed top-1/2 left-1/2 w-[min(420px,40vw)] -translate-1/2 shadow-2xl">
+        <span class="font-bold">Modify the grid settings</span>
+        <form class="flex flex-col gap-4" @submit.prevent="setModal()">
+          <div class="flex flex-row gap-2 2xl:gap-4">
+            <div class="flex flex-1 flex-col gap-4">
+              <label for="grid-columns">Columns</label>
+              <input id="grid-columns" type="number" min="1" max="16" v-model.number="gridSettings.columns" />
+            </div>
+            <div class="flex flex-1 flex-col gap-4">
+              <label for="grid-rows" class="flex-1">Rows</label>
+              <input id="grid-rows" type="number" min="1" max="116" v-model.number="gridSettings.rows" />
+            </div>
+          </div>
+          <div class="flex justify-between gap-4 pt-2">
+            <div class="flex items-center">
+              <CheckboxElem v-model="gridSettings.visible" :label="'Visible'" />
+            </div>
+            <button class="alt" @click.prevent.left="setModal()">
+              <span>Close</span>
+            </button>
+          </div>
+        </form>
       </window>
     </TransitionGroup>
   </div>
@@ -870,32 +900,45 @@ const syncLayersStructural = (wipeSettings = true) => {
         </button>
       </TransitionGroup>
     </div>
-    <div class="ml-auto flex flex-row items-stretch xl:absolute xl:left-1/2 xl:-translate-x-1/2">
-      <button
-        class="rounded-r-none px-4"
-        :disabled="zoomScale === 5"
-        @mousedown.left.exact="startAdjust(() => setZoomScale(-1))"
-        @mousedown.left.shift="startAdjust(() => setZoomScale(-5))"
-        @mouseup="stopAdjust"
-        @mouseleave="stopAdjust"
-        tooltip="Zoom out by 1% (hold shift for 5%)"
-      >
-        <Icon icon="mdi:minus" class="size-5" />
-      </button>
-      <button class="-mx-[1px] min-w-20 rounded-none px-4" @click.left.exact="zoomScale = 100" @click.left.shift="calculateResponsiveZoomScale()" tooltip="Reset to 100% (hold shift to reset to fit)">
-        <span>{{ zoomScale }}%</span>
-      </button>
-      <button
-        class="rounded-l-none px-4"
-        :disabled="zoomScale === 100"
-        @mousedown.left.exact="startAdjust(() => setZoomScale(1))"
-        @mousedown.left.shift="startAdjust(() => setZoomScale(5))"
-        @mouseup="stopAdjust"
-        @mouseleave="stopAdjust"
-        tooltip="Zoom in by 1% (hold shift for 5%)"
-      >
-        <Icon icon="mdi:plus" class="size-5" />
-      </button>
+    <div class="mr-auto ml-auto xl:absolute xl:left-1/2 xl:-translate-x-1/2">
+      <div class="flex gap-2 xl:gap-4">
+        <button class="alt" @click.left="setModal('gridModal')" tooltip="Adjust the grid">
+          <Icon icon="mdi:grid" class="size-5" />
+          <span class="hidden xl:inline">Grid</span>
+        </button>
+        <div class="flex flex-row items-stretch">
+          <button
+            class="rounded-r-none px-3"
+            :disabled="zoomScale === 5"
+            @mousedown.left.exact="startAdjust(() => setZoomScale(-1))"
+            @mousedown.left.shift="startAdjust(() => setZoomScale(-5))"
+            @mouseup="stopAdjust"
+            @mouseleave="stopAdjust"
+            tooltip="Zoom out by 1% (hold shift for 5%)"
+          >
+            <Icon icon="mdi:minus" class="size-5" />
+          </button>
+          <button
+            class="-mx-[1px] min-w-18 rounded-none px-3"
+            @click.left.exact="zoomScale = 100"
+            @click.left.shift="calculateResponsiveZoomScale()"
+            tooltip="Reset to 100% (hold shift to reset to fit)"
+          >
+            <span>{{ zoomScale }}%</span>
+          </button>
+          <button
+            class="rounded-l-none px-3"
+            :disabled="zoomScale === 100"
+            @mousedown.left.exact="startAdjust(() => setZoomScale(1))"
+            @mousedown.left.shift="startAdjust(() => setZoomScale(5))"
+            @mouseup="stopAdjust"
+            @mouseleave="stopAdjust"
+            tooltip="Zoom in by 1% (hold shift for 5%)"
+          >
+            <Icon icon="mdi:plus" class="size-5" />
+          </button>
+        </div>
+      </div>
     </div>
     <div class="flex flex-row items-stretch gap-2 xl:gap-4">
       <div class="flex flex-row">
@@ -936,6 +979,20 @@ const syncLayersStructural = (wipeSettings = true) => {
           :key="layer.id"
         ></figure>
       </TransitionGroup>
+      <div v-show="gridSettings.visible" class="pointer-events-none absolute inset-0 top-0 left-0 z-50">
+        <div
+          v-for="col in gridSettings.columns - 1"
+          :style="`left: ${(col / gridSettings.columns) * 100}%; opacity: ${gridSettings.opacity}%;`"
+          class="absolute top-0 h-full w-[1px] bg-white"
+          :key="col"
+        ></div>
+        <div
+          v-for="row in gridSettings.rows - 1"
+          :style="`top: ${(row / gridSettings.rows) * 100}%; opacity: ${gridSettings.opacity}%;`"
+          class="absolute left-0 h-[1px] w-full bg-white"
+          :key="row"
+        ></div>
+      </div>
     </div>
     <span :style="`margin-top: ${Math.round(cmsResModelHeight * ((zoomScale / 100) * 0.5)) + 18}px`" class="absolute top-1/2 left-1/2 -translate-1/2 transition-[margin]">
       {{ `Width: ${cmsResModelWidth}px, height: ${cmsResModelHeight}px` }}
