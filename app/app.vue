@@ -694,11 +694,17 @@ const stopEditingName = async () => {
 }
 
 const addLayer = () => {
+  const layerNameRegex = /^Layer #(\d+)$/mi
+  const layerNames = layerArray
+    .map((layer) => layer.name)
+    .filter((name) => layerNameRegex.test(name))
+    .sort()
   const layerNew = structuredClone(layerDefault)
   const layerNewId = Date.now()
   layerNew.id = layerNewId
-  if (/#([0-9])*$/m.test(get(layerArray)[get(layerArray).length - 1].name)) {
-    const layerNewNumber = get(layerArray)[get(layerArray).length - 1].name.replace(/.*#([0-9])*$/, '$1')
+  console.log(layerNames)
+  if (layerNames.length) {
+    const layerNewNumber = layerNames[layerNames.length - 1].replace(/.*#([0-9])*$/, '$1')
     layerNew.name = `Layer #${parseInt(layerNewNumber) + 1}`
   }
   layerArray.push(layerNew)
