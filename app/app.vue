@@ -1492,16 +1492,18 @@ const syncLayersStructural = (wipeSettings = true) => {
             <Icon v-if="!layer.displayNone" icon="mdi:eye" />
             <Icon v-else icon="mdi:eye-off" />
           </button>
-          <figure class="pointer-events-none !block size-12 overflow-hidden rounded-lg border-1 border-slate-300 bg-slate-800" :style="layerStyleArray[index]">
-            <img
-              v-if="layer.bgImage !== false"
-              class="!relative block max-h-[unset] max-w-[unset] transition-all interpolate-keywords"
-              :class="{ '!transition-none': isDraggingImage }"
-              :style="layerStyleArray.image[index]"
-              :src="imgArray[layer.bgImage]"
-              draggable="false"
-            />
-          </figure>
+          <div class="size-12 overflow-hidden rounded-lg border-1 border-slate-300">
+            <figure class="!pointer-events-none block size-[inherit] bg-slate-800" :style="layerStyleArray.figure[index]">
+              <img
+                v-if="layer.bgImage !== false"
+                class="!relative block max-h-[unset] max-w-[unset] transition-all interpolate-keywords"
+                :class="{ '!transition-none': isDraggingImage }"
+                :style="layerStyleArray.image[index]"
+                :src="imgArray[layer.bgImage]"
+                draggable="false"
+              />
+            </figure>
+          </div>
           <span
             v-show="nameInputId !== layer.id"
             class="flex-1 truncate overflow-hidden rounded-sm border border-transparent bg-transparent px-2 py-0.5 text-sm text-gray-200 hover:opacity-50 2xl:text-base"
