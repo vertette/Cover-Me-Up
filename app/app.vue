@@ -1214,7 +1214,7 @@ const syncLayersStructural = (wipeSettings = true) => {
         ></div>
       </div>
     </div>
-    <span :style="`margin-top: ${Math.round(cmsResModelHeight * ((zoomScale / 100) * 0.5)) + 18}px`" class="absolute top-1/2 left-1/2 -translate-1/2 transition-[margin]">
+    <span :style="`margin-top: -${Math.round(cmsResModelHeight * ((zoomScale / 100) * 0.5)) + 18}px`" class="absolute top-1/2 left-1/2 -translate-1/2 transition-[margin]">
       {{ `Width: ${cmsResModelWidth}px, height: ${cmsResModelHeight}px` }}
     </span>
   </div>
