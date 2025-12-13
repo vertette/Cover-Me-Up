@@ -1222,10 +1222,10 @@ const syncLayersStructural = (wipeSettings = true) => {
       <div class="flex items-baseline justify-between gap-8">
         <span class="font-bold">Background color</span>
         <div class="flex gap-1">
-          <button class="transparent smallest group" :class="{ active: !currentLayer.bgGradient }" @click.left="currentLayer.bgGradient = false" :disabled="currentLayer.locked" tooltip="Solid">
+          <button class="transparent smallest group" @click.left="currentLayer.bgGradient = false" :disabled="currentLayer.locked || !currentLayer.bgGradient" tooltip="Solid">
             <span class="size-2 rounded-full bg-gray-200 group-disabled:opacity-50 xl:size-3"></span>
           </button>
-          <button class="transparent smallest group" :class="{ active: currentLayer.bgGradient }" @click.left="currentLayer.bgGradient = true" :disabled="currentLayer.locked" tooltip="Gradient">
+          <button class="transparent smallest group" @click.left="currentLayer.bgGradient = true" :disabled="currentLayer.locked || currentLayer.bgGradient" tooltip="Gradient">
             <span class="size-2 rounded-full bg-gradient-to-r from-gray-200 group-disabled:opacity-50 xl:size-3"></span>
           </button>
         </div>
