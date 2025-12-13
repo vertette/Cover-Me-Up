@@ -1088,7 +1088,7 @@ const syncLayersStructural = (wipeSettings = true) => {
           </p>
           <p>
             Presets are divided by platform and resolution. Each resolution with an asterisk is a required asset, and each newly selected resolution will reuse the settings of the previous one, though
-            changing them after that will not change other presets. Make sure to check if your assets look correct before you export them all!
+            changing them after that will not affect other presets. Make sure to check if your assets look correct before you export them all!
           </p>
           <p>
             <em>Cover Me Up</em> is built by Vertette. You can send him your feedback or bug reports online <a href="https://x.com/Vertette" target="_blank"> on Twitter</a> or
