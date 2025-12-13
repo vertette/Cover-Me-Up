@@ -1242,7 +1242,7 @@ const syncLayersStructural = (wipeSettings = true) => {
     @pointerdown.left="onPointerDown"
   ></div>
   <div class="pointer-events-none absolute right-6 bottom-5 left-6 flex items-end justify-between gap-2 *:pointer-events-auto">
-    <window class="w-88 2xl:w-96" :class="{ 'pointer-events-none opacity-0': inPreview === true }">
+    <window class="w-88 2xl:w-96" :class="{ 'pointer-events-none opacity-0': inPreview === true }" @mousedown.left="setDragImageStyle($event, false)">
       <div class="flex items-baseline justify-between gap-8">
         <span class="font-bold">Background color</span>
         <div class="flex gap-1">
