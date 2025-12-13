@@ -490,7 +490,7 @@ const layerDefault = {
 const layerArray = reactive([structuredClone(layerDefault)])
 const layerStyleArray = computed(() => {
   const localParse = (val) => {
-    const match = val.toString().match(/^([-?\d\.]+)(.*)$/mi)
+    const match = val.toString().match(/^([-?\d\.]+)(.*)$/im)
     if (match) return { num: parseFloat(match[1]), unit: match[2] || 'px' }
     return null
   }
@@ -519,15 +519,15 @@ const layerStyleArray = computed(() => {
       img.position = 'absolute'
       const parsedHorPos = localParse(layer.bgImageHorPos)
       const parsedVerPos = localParse(layer.bgImageVerPos)
-      
+
       if (layer.bgImageHorPos && parsedHorPos) {
         let { num: horPos, unit: horPosUnit } = parsedHorPos
-        horPos = (horPosUnit !== '%') ? Math.round(localScale(parsedHorPos.num)) : horPos
+        horPos = horPosUnit !== '%' ? Math.round(localScale(parsedHorPos.num)) : horPos
         img.left = `calc(${layer.bgHorFlip ? `100% - ` : ''}${horPos}${horPosUnit})`
       } else img.left = '50%'
       if (layer.bgImageVerPos && parsedVerPos) {
         let { num: verPos, unit: verPosUnit } = parsedVerPos
-        verPos = (verPosUnit !== '%') ? Math.round(localScale(parsedVerPos.num)) : verPos
+        verPos = verPosUnit !== '%' ? Math.round(localScale(parsedVerPos.num)) : verPos
         img.top = `calc(${layer.bgVerFlip ? `100% - ` : ''}${verPos}${verPosUnit})`
       } else img.top = '50%'
 
@@ -1192,7 +1192,7 @@ const syncLayersStructural = (wipeSettings = true) => {
           <img
             v-if="layer.bgImage !== false"
             :class="{ 'hover:cursor-pointer': (currentLayerId = layer.id), 'cursor-move !transition-none': (currentLayerId = layer.id && isDraggingImage) }"
-            class="block max-h-[unset] relative max-w-[unset] touch-none transition-all interpolate-keywords"
+            class="relative block max-h-[unset] max-w-[unset] touch-none transition-all interpolate-keywords"
             @mousedown.left.prevent="startImageDrag"
             :style="layerStyleArray.image[index]"
             :src="imgArray[layer.bgImage]"
@@ -1225,10 +1225,10 @@ const syncLayersStructural = (wipeSettings = true) => {
         <span class="font-bold">Background color</span>
         <div class="flex gap-1">
           <button class="transparent smallest group" :class="{ active: !currentLayer.bgGradient }" @click.left="currentLayer.bgGradient = false" :disabled="currentLayer.locked" tooltip="Solid">
-            <span class="size-3 rounded-full bg-gray-200 group-disabled:opacity-50"></span>
+            <span class="size-2 rounded-full bg-gray-200 group-disabled:opacity-50 xl:size-3"></span>
           </button>
           <button class="transparent smallest group" :class="{ active: currentLayer.bgGradient }" @click.left="currentLayer.bgGradient = true" :disabled="currentLayer.locked" tooltip="Gradient">
-            <span class="size-3 rounded-full bg-gradient-to-r from-gray-200 group-disabled:opacity-50"></span>
+            <span class="size-2 rounded-full bg-gradient-to-r from-gray-200 group-disabled:opacity-50 xl:size-3"></span>
           </button>
         </div>
       </div>
@@ -1251,10 +1251,10 @@ const syncLayersStructural = (wipeSettings = true) => {
         <div class="flex gap-1">
           <button class="transparent smallest" @click.left="fileInput.click()" tooltip="Upload an image">
             <input type="file" class="hidden" accept="image/png, image/webp, image/jpeg, image/jpg" multiple @change="addFile" ref="fileInput" />
-            <Icon icon="mdi:file-upload" class="size-4" />
+            <Icon icon="mdi:file-upload" class="size-3 xl:size-4" />
           </button>
           <button class="transparent smallest" @click.left="setModal('urlModal')" tooltip="Link an image">
-            <Icon icon="mdi:file-link" class="size-4" />
+            <Icon icon="mdi:file-link" class="size-3 xl:size-4" />
           </button>
         </div>
       </div>
@@ -1291,10 +1291,10 @@ const syncLayersStructural = (wipeSettings = true) => {
         <span class="font-bold">Background settings</span>
         <div class="flex gap-1">
           <button class="transparent smallest" @click.left="flipImage(0)" :disabled="currentLayer.locked" tooltip="Mirror horizontally">
-            <Icon icon="mdi:arrow-left-right" class="size-4" />
+            <Icon icon="mdi:arrow-left-right" class="size-3 xl:size-4" />
           </button>
           <button class="transparent smallest" @click.left="flipImage(1)" :disabled="currentLayer.locked" tooltip="Mirror vertically">
-            <Icon icon="mdi:arrow-up-down" class="size-4" />
+            <Icon icon="mdi:arrow-up-down" class="size-3 xl:size-4" />
           </button>
           <button
             class="transparent smallest"
@@ -1305,7 +1305,7 @@ const syncLayersStructural = (wipeSettings = true) => {
             :disabled="currentLayer.locked"
             tooltip="Rotate 1 deg counter-clockwise (hold shift for 5)"
           >
-            <Icon icon="mdi:rotate-counter-clockwise" class="size-4" />
+            <Icon icon="mdi:rotate-counter-clockwise" class="size-3 xl:size-4" />
           </button>
           <button
             class="transparent smallest"
@@ -1316,7 +1316,7 @@ const syncLayersStructural = (wipeSettings = true) => {
             :disabled="currentLayer.locked"
             tooltip="Rotate 1 deg clockwise (hold shift for 5)"
           >
-            <Icon icon="mdi:rotate-clockwise" class="size-4" />
+            <Icon icon="mdi:rotate-clockwise" class="size-3 xl:size-4" />
           </button>
         </div>
       </div>
@@ -1472,7 +1472,7 @@ const syncLayersStructural = (wipeSettings = true) => {
       <div class="flex w-full justify-between">
         <span class="font-bold">Layers</span>
         <button class="transparent smallest" @click.left="addLayer" tooltip="Add a new layer">
-          <Icon icon="mdi:layers-plus" class="size-4" />
+          <Icon icon="mdi:layers-plus" class="size-3 xl:size-4" />
         </button>
       </div>
       <div class="flex gap-4">
