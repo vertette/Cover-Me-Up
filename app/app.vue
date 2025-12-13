@@ -702,7 +702,7 @@ const addLayer = () => {
   const layerNewId = Date.now()
   layerNew.id = layerNewId
 
-  const layerNameRegex = /^Layer #(\d+)$/mi
+  const layerNameRegex = /^Layer #(\d+)$/im
   const layerNames = layerArray
     .map((layer) => layer.name)
     .filter((name) => layerNameRegex.test(name))
@@ -772,6 +772,158 @@ const startAdjust = (fnOrProp, delta = 1) => {
 const stopAdjust = () => {
   clearTimeout(adjustTimeout)
   clearInterval(adjustInterval)
+}
+
+const isDraggingImage = ref(false)
+let dragStartClientX = 0
+let dragStartClientY = 0
+let dragStartNumX = 0
+let dragStartNumY = 0
+let dragUnitX = 'px'
+let dragUnitY = 'px'
+
+const onPointerMove = (event) => {
+  if (!get(isDraggingImage)) return
+  onPointerMoveImage(event)
+}
+
+const onPointerUp = (event) => {
+  if (!get(isDraggingImage)) return
+  stopImageDrag()
+}
+
+function unitToPX(unit) {
+  // returns the number of pixels represented by 1 unit of `unit`
+  switch (unit) {
+    case 'px':
+    case '':
+      return 1
+    case '%':
+      // percent conversions vary by axis, handle separately
+      return null
+    case 'rem': {
+      const rootFont = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
+      return rootFont
+    }
+    case 'em': {
+      // approximate em as root font-size (can't reliably get element font size here)
+      const rootFont = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
+      return rootFont
+    }
+    case 'vw':
+      return window.innerWidth / 100
+    case 'vh':
+      return window.innerHeight / 100
+    default:
+      // unknown - fallback to px
+      return 1
+  }
+}
+
+const startImageDrag = (event) => {
+  if (!get(currentLayer) || get(currentLayer).locked) return
+
+  // store initial cursor and parsed values
+  dragStartClientX = event.clientX
+  dragStartClientY = event.clientY
+
+  // parse current position values
+  const parsedX = parseValue(get(currentLayer).bgImageHorPos || '50%') || { num: 50, unit: '%' }
+  const parsedY = parseValue(get(currentLayer).bgImageVerPos || '50%') || { num: 50, unit: '%' }
+
+  dragStartNumX = parsedX.num
+  dragStartNumY = parsedY.num
+  dragUnitX = parsedX.unit || 'px'
+  dragUnitY = parsedY.unit || 'px'
+
+  // lock dragging state
+  set(isDraggingImage, true)
+
+  // prevent native drag
+  if (event.target && event.target.setPointerCapture) {
+    try {
+      event.target.setPointerCapture(event.pointerId)
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  // attach global listeners so we keep running code even if cursor leaves the element
+  window.addEventListener('pointermove', onPointerMove, { passive: false })
+  window.addEventListener('pointerup', onPointerUp, { passive: true })
+  window.addEventListener('pointercancel', onPointerUp, { passive: true })
+
+  event.preventDefault()
+}
+
+const onPointerMoveImage = (event) => {
+  if (!get(isDraggingImage)) return
+  if (!get(currentLayer)) return
+
+  // zoomScale is percentage (e.g. 100 == 1:1). Movement in screen px needs to be converted
+  const scaleFactor = 100 / Math.max(1, get(zoomScale)) // multiply screen delta by this to get original px delta
+
+  const deltaScreenX = event.clientX - dragStartClientX
+  const deltaScreenY = event.clientY - dragStartClientY
+
+  // delta in original image pixels
+  const deltaPxX = deltaScreenX * scaleFactor
+  const deltaPxY = deltaScreenY * scaleFactor
+
+  // helper to convert px delta into the unit of the stored value
+  const convertPxToUnit = (deltaPx, unit, axis) => {
+    if (unit === '%' || unit.trim() === '%') {
+      // percent relative to the canvas resolution dimension
+      const base = axis === 'x' ? get(cmsResModelWidth) : get(cmsResModelHeight)
+      if (!base || base === 0) return 0
+      return (deltaPx / base) * 100
+    }
+    const pxPerUnit = unitToPX(unit)
+    if (pxPerUnit === null) {
+      // fallback for percent (shouldn't reach here)
+      return deltaPx
+    }
+    return deltaPx / pxPerUnit
+  }
+
+  // compute converted deltas
+  let deltaInUnitX = convertPxToUnit(deltaPxX, dragUnitX, 'x')
+  let deltaInUnitY = convertPxToUnit(deltaPxY, dragUnitY, 'y')
+
+  // if the layer is flipped, the CSS used is calc(100% - pos) so we need to invert movement
+  if (get(currentLayer).bgHorFlip) deltaInUnitX = -deltaInUnitX
+  if (get(currentLayer).bgVerFlip) deltaInUnitY = -deltaInUnitY
+
+  // compute new numeric values
+  const newNumX = dragStartNumX + deltaInUnitX
+  const newNumY = dragStartNumY + deltaInUnitY
+
+  // format the units
+  const fmt = (n, unit) => {
+    // for percent keep two decimals, for px keep 1 decimal if large else integer, for others keep two decimals
+    if (unit === '%') return `${Math.round(n * 100) / 100}${unit}`
+    if (unit === 'px' || unit === '') {
+      // avoid floaty px values; keep 1 decimal if not integer
+      return `${Math.round(n * 10) / 10}px`
+    }
+    return `${Math.round(n * 100) / 100}${unit}`
+  }
+
+  // write values back to currentLayer (directly because currentLayer is reactiveComputed)
+  currentLayer.bgImageHorPos = fmt(newNumX, dragUnitX)
+  currentLayer.bgImageVerPos = fmt(newNumY, dragUnitY)
+
+  // prevent default to avoid text selection or page dragging
+  event.preventDefault()
+}
+
+const stopImageDrag = () => {
+  if (!get(isDraggingImage)) return
+
+  set(isDraggingImage, false)
+  window.removeEventListener('pointermove', onPointerMove)
+  window.removeEventListener('pointerup', onPointerUp)
+  window.removeEventListener('pointercancel', onPointerUp)
 }
 
 const syncLayersStructural = (wipeSettings = true) => {
@@ -1017,13 +1169,15 @@ const syncLayersStructural = (wipeSettings = true) => {
         <figure
           v-for="(layer, index) in layerArray"
           :class="{ 'transition-[background-size,_background-color,_background-position]': !isExporting }"
-          class="!pointer-events-none absolute h-full w-full interpolate-keywords"
+          class="absolute h-full w-full interpolate-keywords"
           :style="layerStyleArray.figure[index]"
           :key="layer.id"
         >
           <img
             v-if="layer.bgImage !== false"
-            class="block max-h-[unset] max-w-[unset] transition-all interpolate-keywords"
+            :class="{ 'hover:cursor-pointer': (currentLayerId = layer.id), 'cursor-move !transition-none': (currentLayerId = layer.id && isDraggingImage) }"
+            class="block max-h-[unset] relative max-w-[unset] touch-none transition-all interpolate-keywords"
+            @mousedown.left.prevent="startImageDrag"
             :style="layerStyleArray.image[index]"
             :src="imgArray[layer.bgImage]"
             draggable="false"
@@ -1327,7 +1481,7 @@ const syncLayersStructural = (wipeSettings = true) => {
           <figure class="pointer-events-none !block size-12 overflow-hidden rounded-lg border-1 border-slate-300 bg-slate-800" :style="layerStyleArray[index]">
             <img
               v-if="layer.bgImage !== false"
-              class="!relative block max-h-[unset] max-w-[unset] transition-all interpolate-keywords"
+              class="!relative block max-h-[unset] max-w-[unset] interpolate-keywords"
               :style="layerStyleArray.image[index]"
               :src="imgArray[layer.bgImage]"
               draggable="false"
