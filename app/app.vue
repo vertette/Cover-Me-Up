@@ -1316,6 +1316,14 @@ const syncLayersStructural = (wipeSettings = true) => {
           >
             <Icon icon="mdi:rotate-clockwise" class="size-3 xl:size-4" />
           </button>
+          <button
+            class="transparent smallest"
+            @mousedown.left="currentLayer.bgRotate = 0"
+            :disabled="currentLayer.locked"
+            tooltip="Reset rotation back to 0 deg"
+          >
+          <Icon icon="mdi:cached" class="size-3 xl:size-4" />
+        </button>
         </div>
       </div>
       <div class="flex items-center gap-x-1">
