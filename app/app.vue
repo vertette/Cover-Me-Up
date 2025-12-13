@@ -411,7 +411,7 @@ const exportImage = async (kind) => {
     return { name, blob }
   }
 
-  const imageWrapperElem = get(layerWrapperElem).querySelector('.imageWrapperElem')
+  const imageWrapperElem = get(layerWrapperElem).querySelector('#imageWrapperElem')
   const fileType = kind.endsWith('_all') ? kind.split('_')[0] : kind
   set(isExporting, true)
   set(zoomScale, 100)
@@ -607,6 +607,17 @@ const removeFile = (index) => {
   }
 }
 
+const setImage = async (index) => {
+  currentLayer.bgImage = currentLayer.bgImage !== index ? index : false
+  await nextTick()
+
+  if (currentLayer.bgImage !== false) {
+    const currentLayerIndex = layerArray.findIndex((layer) => layer.id === get(currentLayerId)) + 1
+    const currentImgElem = get(layerWrapperElem).querySelector(`#imageWrapperElem>figure:nth-child(${currentLayerIndex})>img`)
+    const currentImgBound = currentImgElem.getBoundingClientRect()
+    setDragImageStyle(false, currentImgBound)
+  } else setDragImageStyle()
+}
 const flipImage = async (direction) => {
   set(isExporting, true)
   if (direction === 0) currentLayer.bgHorFlip = !currentLayer.bgHorFlip
@@ -1183,7 +1194,7 @@ const syncLayersStructural = (wipeSettings = true) => {
       <TransitionGroup
         :style="`width: ${Math.round(cmsResModelWidth * (zoomScale / 100))}px; height: ${Math.round(cmsResModelHeight * (zoomScale / 100))}px`"
         :class="{ 'transition-[height,_width]': !isExporting }"
-        class="imageWrapperElem"
+        id="imageWrapperElem"
         type="transition"
         tag="div"
       >
@@ -1285,7 +1296,7 @@ const syncLayersStructural = (wipeSettings = true) => {
             v-for="(img, index) in imgArray"
             class="relative block size-12 cursor-pointer overflow-hidden rounded-lg border-1 border-gray-300/50 bg-slate-800 p-0 transition hover:border-gray-300 disabled:pointer-events-none disabled:opacity-50"
             :class="{ '!border-white': currentLayer.bgImage === index, '!border-gray-300': currentLayer.locked }"
-            @click.left.self="currentLayer.bgImage = currentLayer.bgImage !== index ? index : false"
+            @click.left.self="setImage(index)"
             :disabled="currentLayer.locked"
             :tooltip="currentLayer.bgImage === index ? 'Unset this as background image' : 'Set this as background image'"
           >
