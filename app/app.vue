@@ -1055,10 +1055,10 @@ const syncLayersStructural = (wipeSettings = true) => {
         <span class="font-bold">Background color</span>
         <div class="flex gap-1">
           <button class="transparent smallest group" :class="{ active: !currentLayer.bgGradient }" @click.left="currentLayer.bgGradient = false" :disabled="currentLayer.locked" tooltip="Solid">
-            <span class="size-2 rounded-full bg-gray-200 group-disabled:opacity-50"></span>
+            <span class="size-3 rounded-full bg-gray-200 group-disabled:opacity-50"></span>
           </button>
           <button class="transparent smallest group" :class="{ active: currentLayer.bgGradient }" @click.left="currentLayer.bgGradient = true" :disabled="currentLayer.locked" tooltip="Gradient">
-            <span class="size-2 rounded-full bg-gradient-to-r from-gray-200 group-disabled:opacity-50"></span>
+            <span class="size-3 rounded-full bg-gradient-to-r from-gray-200 group-disabled:opacity-50"></span>
           </button>
         </div>
       </div>
@@ -1081,10 +1081,10 @@ const syncLayersStructural = (wipeSettings = true) => {
         <div class="flex gap-1">
           <button class="transparent smallest" @click.left="fileInput.click()" tooltip="Upload an image">
             <input type="file" class="hidden" accept="image/png, image/webp, image/jpeg, image/jpg" multiple @change="addFile" ref="fileInput" />
-            <Icon icon="mdi:file-upload" class="size-3" />
+            <Icon icon="mdi:file-upload" class="size-4" />
           </button>
           <button class="transparent smallest" @click.left="setModal('urlModal')" tooltip="Link an image">
-            <Icon icon="mdi:file-link" class="size-3" />
+            <Icon icon="mdi:file-link" class="size-4" />
           </button>
         </div>
       </div>
@@ -1121,10 +1121,10 @@ const syncLayersStructural = (wipeSettings = true) => {
         <span class="font-bold">Background settings</span>
         <div class="flex gap-1">
           <button class="transparent smallest" @click.left="flipImage(0)" :disabled="currentLayer.locked" tooltip="Mirror horizontally">
-            <Icon icon="mdi:arrow-left-right" class="size-3" />
+            <Icon icon="mdi:arrow-left-right" class="size-4" />
           </button>
           <button class="transparent smallest" @click.left="flipImage(1)" :disabled="currentLayer.locked" tooltip="Mirror vertically">
-            <Icon icon="mdi:arrow-up-down" class="size-3" />
+            <Icon icon="mdi:arrow-up-down" class="size-4" />
           </button>
           <button
             class="transparent smallest"
@@ -1135,7 +1135,7 @@ const syncLayersStructural = (wipeSettings = true) => {
             :disabled="currentLayer.locked"
             tooltip="Rotate 1 deg counter-clockwise (hold shift for 5)"
           >
-            <Icon icon="mdi:rotate-counter-clockwise" class="size-3" />
+            <Icon icon="mdi:rotate-counter-clockwise" class="size-4" />
           </button>
           <button
             class="transparent smallest"
@@ -1146,7 +1146,7 @@ const syncLayersStructural = (wipeSettings = true) => {
             :disabled="currentLayer.locked"
             tooltip="Rotate 1 deg clockwise (hold shift for 5)"
           >
-            <Icon icon="mdi:rotate-clockwise" class="size-3" />
+            <Icon icon="mdi:rotate-clockwise" class="size-4" />
           </button>
         </div>
       </div>
@@ -1302,7 +1302,7 @@ const syncLayersStructural = (wipeSettings = true) => {
       <div class="flex w-full justify-between">
         <span class="font-bold">Layers</span>
         <button class="transparent smallest" @click.left="addLayer" tooltip="Add a new layer">
-          <Icon icon="mdi:layers-plus" class="size-3" />
+          <Icon icon="mdi:layers-plus" class="size-4" />
         </button>
       </div>
       <div class="flex gap-4">
