@@ -508,9 +508,8 @@ const layerStyleArray = computed(() => {
     if (layer.displayNone) fig.display = 'none'
     if (layer.bgColor && !layer.bgGradient) fig.backgroundColor = layer.bgColor
     else fig.backgroundColor = 'transparent'
-    if (layer.bgGradient) {
-      fig.backgroundImage = `linear-gradient(${layer.bgGradientDeg}deg in oklab, ${layer.bgGradientFrom}, ${layer.bgGradientTo})`
-    }
+    if (layer.bgGradient) fig.backgroundImage = `linear-gradient(${layer.bgGradientDeg}deg in oklab, ${layer.bgGradientFrom}, ${layer.bgGradientTo})`
+    if (layer.bgBlendMode) fig.mixBlendMode = layer.bgBlendMode
 
     // image element style
     const img = {}
@@ -543,7 +542,6 @@ const layerStyleArray = computed(() => {
       else img.height = 'auto'
 
       if (layer.bgOpacity && layer.bgOpacity < 100) img.opacity = parseFloat(layer.bgOpacity / 100)
-      if (layer.bgBlendMode) img.mixBlendMode = layer.bgBlendMode
       if (layer.bgImageFit) img.objectFit = layer.bgImageFit
     }
 
@@ -1174,7 +1172,7 @@ const syncLayersStructural = (wipeSettings = true) => {
     </div>
   </header>
   <div class="relative flex-1 overflow-hidden" ref="layerWrapperElem">
-    <div class="absolute top-1/2 left-1/2 -translate-1/2 overflow-hidden border-1 border-slate-300">
+    <div class="absolute top-1/2 left-1/2 -translate-1/2 overflow-hidden border border-slate-300">
       <TransitionGroup
         :style="`width: ${Math.round(cmsResModelWidth * (zoomScale / 100))}px; height: ${Math.round(cmsResModelHeight * (zoomScale / 100))}px`"
         :class="{ 'transition-[height,_width]': !isExporting }"
