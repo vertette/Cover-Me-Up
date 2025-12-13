@@ -233,7 +233,8 @@ const gridSettings = reactive({
 })
 
 const zoomScale = ref(100)
-const setZoomScale = (add) => {
+const setZoomScale = (add, event = null) => {
+  if (event) add = 5 * Math.sign(event.deltaY)
   set(zoomScale, clamp(5, zoomScale.value + add, 100))
 }
 const layerWrapperElem = useTemplateRef('layerWrapperElem')
@@ -1171,7 +1172,7 @@ const syncLayersStructural = (wipeSettings = true) => {
       </ListboxElem>
     </div>
   </header>
-  <div class="relative flex-1 overflow-hidden" ref="layerWrapperElem">
+  <div class="relative flex-1 overflow-hidden" ref="layerWrapperElem" @wheel="setZoomScale(0, $event)">
     <div class="absolute top-1/2 left-1/2 -translate-1/2 overflow-hidden border border-slate-300">
       <TransitionGroup
         :style="`width: ${Math.round(cmsResModelWidth * (zoomScale / 100))}px; height: ${Math.round(cmsResModelHeight * (zoomScale / 100))}px`"
