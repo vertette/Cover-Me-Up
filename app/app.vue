@@ -295,7 +295,7 @@ const isValidLayer = (layer) => {
     'name' in layer &&
     (layer.bgImage === false || typeof layer.bgImage === 'number') &&
     typeof layer.displayNone === 'boolean' &&
-    typeof layer.bgImageRepeat === 'string' &&
+    typeof layer.bgImageFit === 'string' &&
     typeof layer.bgBlendMode === 'string' &&
     typeof layer.bgImageHorSize === 'string' &&
     typeof layer.bgImageHorPos === 'string' &&
@@ -489,6 +489,14 @@ const layerDefault = {
 }
 const layerArray = reactive([structuredClone(layerDefault)])
 const layerStyleArray = computed(() => {
+  const localParse = (val) => {
+    const match = val.toString().match(/^([-?\d\.]+)(.*)$/mi)
+    if (match) return { num: parseFloat(match[1]), unit: match[2] || 'px' }
+    return null
+  }
+  const localScale = (num) => {
+    return (num * get(zoomScale)) / 100
+  }
   const figureArray = []
   const imageArray = []
 
@@ -509,11 +517,19 @@ const layerStyleArray = computed(() => {
     if (layer.bgImage === false) img.display = 'none'
     else {
       img.position = 'absolute'
-      // left/top with translate(-50%, -50%) to emulate background-position centering behavior
-      if (layer.bgImageHorPos) img.left = `calc(${layer.bgHorFlip ? `100% - ` : ''}${layer.bgImageHorPos})`
-      else img.left = '50%'
-      if (layer.bgImageVerPos) img.top = `calc(${layer.bgVerFlip ? `100% - ` : ''}${layer.bgImageVerPos})`
-      else img.top = '50%'
+      const parsedHorPos = localParse(layer.bgImageHorPos)
+      const parsedVerPos = localParse(layer.bgImageVerPos)
+      
+      if (layer.bgImageHorPos && parsedHorPos) {
+        let { num: horPos, unit: horPosUnit } = parsedHorPos
+        horPos = (horPosUnit !== '%') ? Math.round(localScale(parsedHorPos.num)) : horPos
+        img.left = `calc(${layer.bgHorFlip ? `100% - ` : ''}${horPos}${horPosUnit})`
+      } else img.left = '50%'
+      if (layer.bgImageVerPos && parsedVerPos) {
+        let { num: verPos, unit: verPosUnit } = parsedVerPos
+        verPos = (verPosUnit !== '%') ? Math.round(localScale(parsedVerPos.num)) : verPos
+        img.top = `calc(${layer.bgVerFlip ? `100% - ` : ''}${verPos}${verPosUnit})`
+      } else img.top = '50%'
 
       const scaleX = layer.bgHorFlip ? -1 : 1
       const scaleY = layer.bgVerFlip ? -1 : 1
