@@ -1492,8 +1492,8 @@ const syncLayersStructural = (wipeSettings = true) => {
             <Icon v-if="!layer.displayNone" icon="mdi:eye" />
             <Icon v-else icon="mdi:eye-off" />
           </button>
-          <div class="size-12 overflow-hidden rounded-lg border-1 border-slate-300">
-            <figure class="!pointer-events-none block size-[inherit] bg-slate-800" :style="layerStyleArray.figure[index]">
+          <div class="size-12 overflow-hidden rounded-lg border-1 border-slate-300 bg-slate-800">
+            <figure class="!pointer-events-none block size-[inherit]" :style="layerStyleArray.figure[index]">
               <img
                 v-if="layer.bgImage !== false"
                 class="!relative block max-h-[unset] max-w-[unset] transition-all interpolate-keywords"
