@@ -1189,7 +1189,11 @@ const syncLayersStructural = (wipeSettings = true) => {
         >
           <img
             v-if="layer.bgImage !== false"
-            :class="{ 'hover:cursor-pointer': currentLayerId === layer.id, 'cursor-move': currentLayerId === layer.id && isDraggingImage, 'transition-all': !isExporting && !inPreview && !isDraggingImage }"
+            :class="{
+              'hover:cursor-pointer': currentLayerId === layer.id,
+              'cursor-move': currentLayerId === layer.id && isDraggingImage,
+              'transition-all': !isExporting && !inPreview && !isDraggingImage,
+            }"
             class="absolute block max-h-[unset] max-w-[unset] interpolate-keywords"
             @mousedown.left.prevent="startImageDrag"
             :style="layerStyleArray.image[index]"
@@ -1316,14 +1320,9 @@ const syncLayersStructural = (wipeSettings = true) => {
           >
             <Icon icon="mdi:rotate-clockwise" class="size-3 xl:size-4" />
           </button>
-          <button
-            class="transparent smallest"
-            @mousedown.left="currentLayer.bgRotate = 0"
-            :disabled="currentLayer.locked"
-            tooltip="Reset rotation back to 0 deg"
-          >
-          <Icon icon="mdi:cached" class="size-3 xl:size-4" />
-        </button>
+          <button class="transparent smallest" @mousedown.left="currentLayer.bgRotate = 0" :disabled="currentLayer.locked" tooltip="Reset rotation back to 0 deg">
+            <Icon icon="mdi:cached" class="size-3 xl:size-4" />
+          </button>
         </div>
       </div>
       <div class="flex items-center gap-x-1">
