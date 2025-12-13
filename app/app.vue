@@ -1183,7 +1183,7 @@ const syncLayersStructural = (wipeSettings = true) => {
         <figure
           v-for="(layer, index) in layerArray"
           :class="{ 'transition-colors': !isExporting, '!pointer-events-none': currentLayerId !== layer.id }"
-          class="relative h-full w-full interpolate-keywords"
+          class="absolute h-full w-full interpolate-keywords"
           :style="layerStyleArray.figure[index]"
           :key="layer.id"
         >
