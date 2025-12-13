@@ -117,6 +117,7 @@ watch(cmsResModel, (_, oldModel) => {
   if (!get(isExporting)) calculateResponsiveZoomScale()
 })
 useEventListener(window, 'resize', () => {
+  setDragImageStyle()
   calculateResponsiveZoomScale()
 })
 
