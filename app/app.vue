@@ -812,10 +812,7 @@ let dragStartClientX = 0,
   dragUnitX = 'px',
   dragUnitY = 'px'
 
-const setDragImageStyle = (event, cont = false) => {
-  set(dragImageStyle, cont)
-}
-const unitToPX = (unit) => {
+const convertUnitToPX = (unit) => {
   // returns the number of pixels represented by 1 unit of `unit`
   switch (unit) {
     case 'px':
@@ -841,6 +838,29 @@ const unitToPX = (unit) => {
       // unknown - fallback to px
       return 1
   }
+}
+const convertPXToUnit = (deltaPx, unit, axis) => {
+  if (unit === '%' || unit.trim() === '%') {
+    // percent relative to the canvas resolution dimension
+    const base = axis === 'x' ? get(cmsResModelWidth) : get(cmsResModelHeight)
+    if (!base || base === 0) return 0
+    return (deltaPx / base) * 100
+  }
+  const pxPerUnit = convertUnitToPX(unit)
+  if (pxPerUnit === null) {
+    // fallback for percent (shouldn't reach here)
+    return deltaPx
+  }
+  return deltaPx / pxPerUnit
+}
+const formatValue = (n, unit) => {
+  // for percent keep two decimals, for px keep 1 decimal if large else integer, for others keep two decimals
+  if (unit === '%') return `${Math.round(n * 100) / 100}${unit}`
+  if (unit === 'px' || unit === '') return `${Math.round(n * 10) / 10}px`
+  return `${Math.round(n * 100) / 100}${unit}`
+}
+const setDragImageStyle = (event, cont = false) => {
+  set(dragImageStyle, cont)
 }
 const onPointerDown = (event) => {
   if (!get(currentLayer) || get(currentLayer).locked) return
@@ -900,25 +920,9 @@ const onPointerMoveImage = (event) => {
   const deltaPxX = deltaScreenX * scaleFactor
   const deltaPxY = deltaScreenY * scaleFactor
 
-  // helper to convert px delta into the unit of the stored value
-  const convertPxToUnit = (deltaPx, unit, axis) => {
-    if (unit === '%' || unit.trim() === '%') {
-      // percent relative to the canvas resolution dimension
-      const base = axis === 'x' ? get(cmsResModelWidth) : get(cmsResModelHeight)
-      if (!base || base === 0) return 0
-      return (deltaPx / base) * 100
-    }
-    const pxPerUnit = unitToPX(unit)
-    if (pxPerUnit === null) {
-      // fallback for percent (shouldn't reach here)
-      return deltaPx
-    }
-    return deltaPx / pxPerUnit
-  }
-
   // compute converted deltas
-  let deltaInUnitX = convertPxToUnit(deltaPxX, dragUnitX, 'x')
-  let deltaInUnitY = convertPxToUnit(deltaPxY, dragUnitY, 'y')
+  let deltaInUnitX = convertPXToUnit(deltaPxX, dragUnitX, 'x')
+  let deltaInUnitY = convertPXToUnit(deltaPxY, dragUnitY, 'y')
 
   // if the layer is flipped, the CSS used is calc(100% - pos) so we need to invert movement
   if (get(currentLayer).bgHorFlip) deltaInUnitX = -deltaInUnitX
@@ -928,20 +932,9 @@ const onPointerMoveImage = (event) => {
   const newNumX = dragStartNumX + deltaInUnitX
   const newNumY = dragStartNumY + deltaInUnitY
 
-  // format the units
-  const fmt = (n, unit) => {
-    // for percent keep two decimals, for px keep 1 decimal if large else integer, for others keep two decimals
-    if (unit === '%') return `${Math.round(n * 100) / 100}${unit}`
-    if (unit === 'px' || unit === '') {
-      // avoid floaty px values; keep 1 decimal if not integer
-      return `${Math.round(n * 10) / 10}px`
-    }
-    return `${Math.round(n * 100) / 100}${unit}`
-  }
-
   // write values back to currentLayer (directly because currentLayer is reactiveComputed)
-  currentLayer.bgImageHorPos = fmt(newNumX, dragUnitX)
-  currentLayer.bgImageVerPos = fmt(newNumY, dragUnitY)
+  currentLayer.bgImageHorPos = formatValue(newNumX, dragUnitX)
+  currentLayer.bgImageVerPos = formatValue(newNumY, dragUnitY)
 
   // prevent default to avoid text selection or page dragging
   event.preventDefault()
@@ -1209,7 +1202,7 @@ const syncLayersStructural = (wipeSettings = true) => {
           <img
             v-if="layer.bgImage !== false"
             :class="{
-              'hover:cursor-pointer': currentLayerId === layer.id,
+              'hover:cursor-pointer': currentLayerId === layer.id && !inPreview && !isExporting,
               '!cursor-move': currentLayerId === layer.id && isDraggingImage,
             }"
             class="absolute block max-h-[unset] max-w-[unset] interpolate-keywords"
@@ -1235,7 +1228,7 @@ const syncLayersStructural = (wipeSettings = true) => {
         ></div>
       </div>
     </div>
-    <span :style="`margin-top: -${Math.round(cmsResModelHeight * ((zoomScale / 100) * 0.5)) + 18}px`" class="absolute top-1/2 left-1/2 z-50 -translate-1/2 bg-slate-900 px-1 transition-[margin]">
+    <span :style="`margin-top: -${Math.round(cmsResModelHeight * ((zoomScale / 100) * 0.5)) + 18}px`" class="absolute top-1/2 left-1/2 -translate-1/2 bg-slate-900 px-1 transition-[margin]">
       {{ `Width: ${cmsResModelWidth}px, height: ${cmsResModelHeight}px` }}
     </span>
   </div>
@@ -1243,7 +1236,7 @@ const syncLayersStructural = (wipeSettings = true) => {
     v-if="dragImageStyle"
     :style="`top: ${dragImageStyle.top}px; left: ${dragImageStyle.left}px; width: ${dragImageStyle.width}px; height: ${dragImageStyle.height}px`"
     :class="{ 'opacity-0': inPreview, hidden: isExporting }"
-    class="pointer-events-none fixed outline outline-red-500"
+    class="transtion-opacity pointer-events-none fixed outline outline-red-500"
   ></div>
   <div class="pointer-events-none absolute right-6 bottom-5 left-6 flex items-end justify-between gap-2 *:pointer-events-auto">
     <window class="w-88 2xl:w-96" :class="{ 'pointer-events-none opacity-0': inPreview === true }">
