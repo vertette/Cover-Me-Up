@@ -1184,15 +1184,15 @@ const syncLayersStructural = (wipeSettings = true) => {
       >
         <figure
           v-for="(layer, index) in layerArray"
-          :class="{ 'transition-[background-size,_background-color,_background-position]': !isExporting }"
+          :class="{ 'transition-[background-size,_background-color,_background-position]': !isExporting, '!pointer-events-none': currentLayerId !== layer.id }"
           class="absolute h-full w-full interpolate-keywords"
           :style="layerStyleArray.figure[index]"
           :key="layer.id"
         >
           <img
             v-if="layer.bgImage !== false"
-            :class="{ 'hover:cursor-pointer': (currentLayerId = layer.id), 'cursor-move !transition-none': (currentLayerId = layer.id && isDraggingImage) }"
-            class="relative block max-h-[unset] max-w-[unset] touch-none transition-all interpolate-keywords"
+            :class="{ 'hover:cursor-pointer': currentLayerId === layer.id, 'cursor-move !transition-none': currentLayerId === layer.id && isDraggingImage }"
+            class="relative block max-h-[unset] max-w-[unset] transition-all interpolate-keywords"
             @mousedown.left.prevent="startImageDrag"
             :style="layerStyleArray.image[index]"
             :src="imgArray[layer.bgImage]"
@@ -1497,7 +1497,8 @@ const syncLayersStructural = (wipeSettings = true) => {
           <figure class="pointer-events-none !block size-12 overflow-hidden rounded-lg border-1 border-slate-300 bg-slate-800" :style="layerStyleArray[index]">
             <img
               v-if="layer.bgImage !== false"
-              class="!relative block max-h-[unset] max-w-[unset] interpolate-keywords"
+              class="!relative block max-h-[unset] max-w-[unset] transition-all interpolate-keywords"
+              :class="{ '!transition-none': isDraggingImage }"
               :style="layerStyleArray.image[index]"
               :src="imgArray[layer.bgImage]"
               draggable="false"
