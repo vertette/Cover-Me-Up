@@ -608,16 +608,18 @@ const removeFile = (index) => {
   }
 }
 
+const getCurrentImage = () => {
+  if (currentLayer.bgImage === false) return
+  const currentLayerIndex = layerArray.findIndex((layer) => layer.id === get(currentLayerId)) + 1
+  const currentImgElem = get(layerWrapperElem).querySelector(`#imageWrapperElem>figure:nth-child(${currentLayerIndex})>img`)
+  return currentImgElem
+}
 const setImage = async (index) => {
   currentLayer.bgImage = currentLayer.bgImage !== index ? index : false
   await nextTick()
 
-  if (currentLayer.bgImage !== false) {
-    const currentLayerIndex = layerArray.findIndex((layer) => layer.id === get(currentLayerId)) + 1
-    const currentImgElem = get(layerWrapperElem).querySelector(`#imageWrapperElem>figure:nth-child(${currentLayerIndex})>img`)
-    const currentImgBound = currentImgElem.getBoundingClientRect()
-    setDragImageStyle(false, currentImgBound)
-  } else setDragImageStyle()
+  if (currentLayer.bgImage !== false) setDragImageStyle(false, getCurrentImage().getBoundingClientRect())
+  else setDragImageStyle()
 }
 const flipImage = async (direction) => {
   set(isExporting, true)
@@ -859,12 +861,15 @@ const formatValue = (n, unit) => {
   if (unit === 'px' || unit === '') return `${Math.round(n * 10) / 10}px`
   return `${Math.round(n * 100) / 100}${unit}`
 }
-const setDragImageStyle = (event, cont = false) => {
-  set(dragImageStyle, cont)
+const setDragImageStyle = (event, bound = false) => {
+  set(dragImageStyle, bound)
+}
+const calculateDragElemStyle = (event) => {
+  setDragImageStyle(false, event.target.getBoundingClientRect())
 }
 const onPointerDown = (event) => {
   if (!get(currentLayer) || get(currentLayer).locked) return
-  setDragImageStyle(false, useElementBounding(event.target))
+  setDragImageStyle(false, useElementBounding(getCurrentImage()))
 
   // store initial cursor and parsed values
   dragStartClientX = event.clientX
@@ -1201,12 +1206,9 @@ const syncLayersStructural = (wipeSettings = true) => {
         >
           <img
             v-if="layer.bgImage !== false"
-            :class="{
-              'hover:cursor-pointer': currentLayerId === layer.id && !inPreview && !isExporting,
-              '!cursor-move': currentLayerId === layer.id && isDraggingImage,
-            }"
+            :class="{ 'hover:cursor-pointer': currentLayerId === layer.id && !inPreview && !isExporting }"
             class="absolute block max-h-[unset] max-w-[unset] interpolate-keywords"
-            @pointerdown.left.prevent="onPointerDown"
+            @pointerdown.left="calculateDragElemStyle"
             :style="layerStyleArray.image[index]"
             :src="imgArray[layer.bgImage]"
             draggable="false"
@@ -1235,8 +1237,9 @@ const syncLayersStructural = (wipeSettings = true) => {
   <div
     v-if="dragImageStyle"
     :style="`top: ${dragImageStyle.top}px; left: ${dragImageStyle.left}px; width: ${dragImageStyle.width}px; height: ${dragImageStyle.height}px`"
-    :class="{ 'opacity-0': inPreview, hidden: isExporting }"
-    class="transtion-opacity pointer-events-none fixed outline outline-red-500"
+    :class="{ '!cursor-move': isDraggingImage, 'opacity-0': inPreview, hidden: isExporting }"
+    class="transtion-opacity fixed cursor-pointer outline outline-red-500"
+    @pointerdown.left="onPointerDown"
   ></div>
   <div class="pointer-events-none absolute right-6 bottom-5 left-6 flex items-end justify-between gap-2 *:pointer-events-auto">
     <window class="w-88 2xl:w-96" :class="{ 'pointer-events-none opacity-0': inPreview === true }">
