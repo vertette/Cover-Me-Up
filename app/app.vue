@@ -1237,7 +1237,7 @@ const syncLayersStructural = (wipeSettings = true) => {
   <div
     v-if="dragImageStyle"
     :style="`top: ${dragImageStyle.top}px; left: ${dragImageStyle.left}px; width: ${dragImageStyle.width}px; height: ${dragImageStyle.height}px`"
-    :class="{ '!cursor-move': isDraggingImage, 'opacity-0': inPreview, hidden: isExporting }"
+    :class="{ '!cursor-move': isDraggingImage, 'hidden': inPreview || isExporting }"
     class="transtion-opacity fixed cursor-pointer outline outline-red-500"
     @pointerdown.left="onPointerDown"
   ></div>
