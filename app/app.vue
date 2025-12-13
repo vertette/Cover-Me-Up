@@ -1091,8 +1091,8 @@ const syncLayersStructural = (wipeSettings = true) => {
             changing them after that will not affect other presets. Make sure to check if your assets look correct before you export them all!
           </p>
           <p>
-            <em>Cover Me Up</em> is built by Vertette. You can send him your feedback or bug reports online <a href="https://x.com/Vertette" target="_blank"> on Twitter</a> or
-            <a href="mailto:vertettegd.com">through an e-mail</a>.
+            <em>Cover Me Up</em> is built by Vertette. You can send him your feedback or bug reports online <a href="mailto:vertettegd.com">through an e-mail</a> or on
+            <a href="https://github.com/vertette/Cover-Me-Up" target="_blank">GitHub</a>.
           </p>
           <div class="flex justify-end gap-4">
             <button class="alt" @click.left="setModal()">
@@ -1237,7 +1237,7 @@ const syncLayersStructural = (wipeSettings = true) => {
   <div
     v-if="dragImageStyle"
     :style="`top: ${dragImageStyle.top}px; left: ${dragImageStyle.left}px; width: ${dragImageStyle.width}px; height: ${dragImageStyle.height}px`"
-    :class="{ '!cursor-move': isDraggingImage, 'hidden': inPreview || isExporting }"
+    :class="{ '!cursor-move': isDraggingImage, hidden: inPreview || isExporting }"
     class="transtion-opacity fixed cursor-pointer outline outline-red-500"
     @pointerdown.left="onPointerDown"
   ></div>
