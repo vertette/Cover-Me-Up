@@ -1104,7 +1104,7 @@ const syncLayersStructural = (wipeSettings = true) => {
     </TransitionGroup>
   </div>
   <header
-    class="flex w-full flex-row items-stretch justify-between gap-2 bg-slate-700 px-4 py-3 transition-all xl:px-6 xl:py-5"
+    class="z-10 flex w-full flex-row items-stretch justify-between gap-2 bg-slate-700 px-4 py-3 transition-all xl:px-6 xl:py-5"
     @mousedown.left="setDragImageStyle($event, false)"
     :class="{ 'bg-transparent': inPreview }"
   >
