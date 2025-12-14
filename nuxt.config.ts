@@ -2,9 +2,6 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineNuxtConfig({
   modules: ['@vueuse/nuxt'],
-  future: {
-    compatibilityVersion: 4,
-  },
   experimental: {
     sharedPrerenderData: true,
     payloadExtraction: false,
@@ -15,7 +12,6 @@ export default defineNuxtConfig({
       title: 'Cover Me Up',
       charset: 'utf-8',
     },
-    baseURL: '/Cover-Me-Up/',
   },
   css: ['~/assets/css/tailwind.css'],
   compatibilityDate: '2024-11-01',
@@ -23,5 +19,4 @@ export default defineNuxtConfig({
   vite: {
     plugins: [tailwindcss()],
   },
-  ssr: false
 })
