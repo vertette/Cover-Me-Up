@@ -813,54 +813,6 @@ let dragStartClientX = 0,
   dragStartNumY = 0,
   dragUnitX = 'px',
   dragUnitY = 'px'
-
-const convertUnitToPX = (unit) => {
-  // returns the number of pixels represented by 1 unit of `unit`
-  switch (unit) {
-    case 'px':
-    case '':
-      return 1
-    case '%':
-      // percent conversions vary by axis, handle separately
-      return null
-    case 'rem': {
-      const rootFont = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
-      return rootFont
-    }
-    case 'em': {
-      // approximate em as root font-size (can't reliably get element font size here)
-      const rootFont = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
-      return rootFont
-    }
-    case 'vw':
-      return window.innerWidth / 100
-    case 'vh':
-      return window.innerHeight / 100
-    default:
-      // unknown - fallback to px
-      return 1
-  }
-}
-const convertPXToUnit = (deltaPx, unit, axis) => {
-  if (unit === '%' || unit.trim() === '%') {
-    // percent relative to the canvas resolution dimension
-    const base = axis === 'x' ? get(cmsResModelWidth) : get(cmsResModelHeight)
-    if (!base || base === 0) return 0
-    return (deltaPx / base) * 100
-  }
-  const pxPerUnit = convertUnitToPX(unit)
-  if (pxPerUnit === null) {
-    // fallback for percent (shouldn't reach here)
-    return deltaPx
-  }
-  return deltaPx / pxPerUnit
-}
-const formatValue = (n, unit) => {
-  // for percent keep two decimals, for px keep 1 decimal if large else integer, for others keep two decimals
-  if (unit === '%') return `${Math.round(n * 100) / 100}${unit}`
-  if (unit === 'px' || unit === '') return `${Math.round(n * 10) / 10}px`
-  return `${Math.round(n * 100) / 100}${unit}`
-}
 const setDragImageStyle = (event, bound = false) => {
   set(dragImageStyle, bound)
 }
