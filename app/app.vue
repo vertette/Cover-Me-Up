@@ -947,7 +947,7 @@ const syncLayersStructural = (wipeSettings = true) => {
   </div>
   <div
     class="pointer-events-none fixed top-0 left-0 z-100 h-screen w-screen bg-slate-950/70 opacity-0 transition-opacity delay-150 duration-250"
-    :class="{ '!pointer-events-auto !opacity-100 delay-[0s]': currentModal }"
+    :class="{ 'pointer-events-auto! opacity-100! delay-[0s]': currentModal }"
     @click.left.self="setModal()"
   >
     <TransitionGroup name="modalList">
@@ -1097,7 +1097,7 @@ const syncLayersStructural = (wipeSettings = true) => {
             <Icon icon="mdi:minus" class="size-5" />
           </button>
           <button
-            class="-mx-[1px] min-w-18 rounded-none px-3"
+            class="-mx-px min-w-18 rounded-none px-3"
             @click.left.exact="zoomScale = 100"
             @click.left.shift="calculateResponsiveZoomScale()"
             tooltip="Reset to 100% (hold shift to reset to fit)"
@@ -1125,7 +1125,7 @@ const syncLayersStructural = (wipeSettings = true) => {
           <Icon icon="mdi:file-upload-outline" class="size-5" />
           <span class="hidden xl:inline">Load</span>
         </button>
-        <button class="-mx-[1px] rounded-l-none" @click.left="saveSettings" tooltip="Save your settings">
+        <button class="-mx-px rounded-l-none" @click.left="saveSettings" tooltip="Save your settings">
           <Icon icon="mdi:file-download-outline" class="size-5" />
           <span class="hidden xl:inline">Save</span>
         </button>
@@ -1144,14 +1144,14 @@ const syncLayersStructural = (wipeSettings = true) => {
     <div class="absolute top-1/2 left-1/2 -translate-1/2 overflow-hidden border border-slate-300">
       <TransitionGroup
         :style="`width: ${Math.round(cmsResModelWidth * (zoomScale / 100))}px; height: ${Math.round(cmsResModelHeight * (zoomScale / 100))}px`"
-        :class="{ 'transition-[height,_width]': !isExporting }"
+        :class="{ 'transition-[height,width]': !isExporting }"
         id="imageWrapperElem"
         type="transition"
         tag="div"
       >
         <figure
           v-for="(layer, index) in layerArray"
-          :class="{ 'transition-colors': !isExporting, '!pointer-events-none': currentLayerId !== layer.id }"
+          :class="{ 'transition-colors': !isExporting, 'pointer-events-none!': currentLayerId !== layer.id }"
           class="absolute h-full w-full interpolate-keywords"
           :style="layerStyleArray.figure[index]"
           :key="layer.id"
@@ -1171,13 +1171,13 @@ const syncLayersStructural = (wipeSettings = true) => {
         <div
           v-for="col in gridSettings.columns - 1"
           :style="`left: ${(col / gridSettings.columns) * 100}%; opacity: ${gridSettings.opacity}; background-color: ${gridSettings.color}`"
-          class="absolute top-0 h-full w-[1px]"
+          class="absolute top-0 h-full w-px"
           :key="col"
         ></div>
         <div
           v-for="row in gridSettings.rows - 1"
           :style="`top: ${(row / gridSettings.rows) * 100}%; opacity: ${gridSettings.opacity}; background-color: ${gridSettings.color}`"
-          class="absolute left-0 h-[1px] w-full"
+          class="absolute left-0 h-px w-full"
           :key="row"
         ></div>
       </div>
@@ -1189,7 +1189,7 @@ const syncLayersStructural = (wipeSettings = true) => {
   <div
     v-if="dragImageStyle"
     :style="`top: ${dragImageStyle.top}px; left: ${dragImageStyle.left}px; width: ${dragImageStyle.width}px; height: ${dragImageStyle.height}px`"
-    :class="{ '!cursor-move': isDraggingImage, hidden: inPreview || isExporting }"
+    :class="{ 'cursor-move!': isDraggingImage, hidden: inPreview || isExporting }"
     class="transtion-opacity fixed cursor-pointer outline outline-red-500"
     @pointerdown.left="onPointerDown"
   ></div>
@@ -1202,7 +1202,7 @@ const syncLayersStructural = (wipeSettings = true) => {
             <span class="size-2 rounded-full bg-gray-200 group-disabled:opacity-50 xl:size-3"></span>
           </button>
           <button class="transparent smallest group" @click.left="currentLayer.bgGradient = true" :disabled="currentLayer.locked || currentLayer.bgGradient" tooltip="Gradient">
-            <span class="size-2 rounded-full bg-gradient-to-r from-gray-200 group-disabled:opacity-50 xl:size-3"></span>
+            <span class="size-2 rounded-full bg-linear-to-r from-gray-200 group-disabled:opacity-50 xl:size-3"></span>
           </button>
         </div>
       </div>
@@ -1236,15 +1236,15 @@ const syncLayersStructural = (wipeSettings = true) => {
         <div class="flex w-fit gap-4">
           <figure
             v-if="!imgArray.length"
-            class="flex size-12 items-center justify-center overflow-hidden rounded-lg border-1 border-gray-300/50 bg-slate-800 transition-colors hover:border-gray-300"
+            class="flex size-12 items-center justify-center overflow-hidden rounded-lg border border-gray-300/50 bg-slate-800 transition-colors hover:border-gray-300"
             tooltip="Upload or link to an image, maybe?"
           >
             <Icon icon="mdi:close" class="size-8" />
           </figure>
           <button
             v-for="(img, index) in imgArray"
-            class="relative block size-12 cursor-pointer overflow-hidden rounded-lg border-1 border-gray-300/50 bg-slate-800 p-0 transition hover:border-gray-300 disabled:pointer-events-none disabled:opacity-50"
-            :class="{ '!border-white': currentLayer.bgImage === index, '!border-gray-300': currentLayer.locked }"
+            class="relative block size-12 cursor-pointer overflow-hidden rounded-lg border border-gray-300/50 bg-slate-800 p-0 transition hover:border-gray-300 disabled:pointer-events-none disabled:opacity-50"
+            :class="{ 'border-white!': currentLayer.bgImage === index, 'border-gray-300!': currentLayer.locked }"
             @click.left.self="setImage(index)"
             :disabled="currentLayer.locked"
             :tooltip="currentLayer.bgImage === index ? 'Unset this as background image' : 'Set this as background image'"
@@ -1334,7 +1334,7 @@ const syncLayersStructural = (wipeSettings = true) => {
           class="transparent smallest"
           tooltip="Swap these values"
         >
-          <Icon icon="mdi:swap-horizontal" class="!size-5" />
+          <Icon icon="mdi:swap-horizontal" class="size-5!" />
         </button>
         <div class="flex w-full">
           <button
@@ -1399,7 +1399,7 @@ const syncLayersStructural = (wipeSettings = true) => {
           class="transparent smallest"
           tooltip="Swap these values"
         >
-          <Icon icon="mdi:swap-horizontal" class="!size-5" />
+          <Icon icon="mdi:swap-horizontal" class="size-5!" />
         </button>
         <div class="flex w-full">
           <button
@@ -1456,11 +1456,11 @@ const syncLayersStructural = (wipeSettings = true) => {
         <ListboxElem class="flex-1/2" :optionArray="bgSettingsBlendArray" v-model="currentLayer.bgBlendMode" :disabled="currentLayer.locked" tooltip="Change the current layer's blend mode" />
         <input class="flex-1/2" v-model="currentLayer.bgOpacity" :disabled="currentLayer.locked" placeholder="Opacity (0 to 100)" tooltip="Change the current layer's opacity" />
       </div>
-      <div class="flex h-[313px] flex-col gap-2 overflow-y-auto lg:h-[321px] 2xl:h-[365px]" ref="layerArrayWrapper">
+      <div class="flex h-78.25 flex-col gap-2 overflow-y-auto lg:h-80.25 2xl:h-91.25" ref="layerArrayWrapper">
         <div
           v-for="(layer, index) in layerArray"
           class="flex cursor-pointer items-center gap-2 overflow-clip rounded-lg p-2 transition-colors"
-          :class="{ '!bg-slate-600': layer.id === currentLayerId, 'hover:bg-slate-600/50': !isDragging }"
+          :class="{ 'bg-slate-600!': layer.id === currentLayerId, 'hover:bg-slate-600/50': !isDragging }"
           @click.left.self="currentLayerId = layer.id"
           :key="layer.id"
         >
@@ -1471,12 +1471,12 @@ const syncLayersStructural = (wipeSettings = true) => {
             <Icon v-if="!layer.displayNone" icon="mdi:eye" />
             <Icon v-else icon="mdi:eye-off" />
           </button>
-          <div class="size-12 overflow-hidden rounded-lg border-1 border-slate-300 bg-slate-800">
-            <figure class="!pointer-events-none block size-[inherit]" :style="layerStyleArray.figure[index]">
+          <div class="size-12 overflow-hidden rounded-lg border border-slate-300 bg-slate-800">
+            <figure class="pointer-events-none! block size-[inherit]" :style="layerStyleArray.figure[index]">
               <img
                 v-if="layer.bgImage !== false"
-                class="!relative block max-h-[unset] max-w-[unset] transition-all interpolate-keywords"
-                :class="{ '!transition-none': isDraggingImage }"
+                class="relative! block max-h-[unset] max-w-[unset] transition-all interpolate-keywords"
+                :class="{ 'transition-none!': isDraggingImage }"
                 :style="layerStyleArray.image[index]"
                 :src="imgArray[layer.bgImage]"
                 draggable="false"
