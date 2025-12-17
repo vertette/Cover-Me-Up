@@ -117,7 +117,7 @@ watch(cmsResModel, (_, oldModel) => {
   if (!get(isExporting)) calculateResponsiveZoomScale()
 })
 useEventListener(window, 'resize', () => {
-  setDragImageStyle()
+  setImgOverlayStyle()
   calculateResponsiveZoomScale()
 })
 
@@ -563,7 +563,7 @@ const currentLayer = reactiveComputed(() => {
   return foundLayer
 })
 watch(currentLayerId, () => {
-  setDragImageStyle(false)
+  setImgOverlayStyle(false)
 })
 
 const urlFormElem = useTemplateRef('urlFormElem')
@@ -618,8 +618,8 @@ const setImage = async (index) => {
   currentLayer.bgImage = currentLayer.bgImage !== index ? index : false
   await nextTick()
 
-  if (currentLayer.bgImage !== false) setDragImageStyle(false, getCurrentImage().getBoundingClientRect())
-  else setDragImageStyle()
+  if (currentLayer.bgImage !== false) setImgOverlayStyle(false, getCurrentImage().getBoundingClientRect())
+  else setImgOverlayStyle()
 }
 const flipImage = async (direction) => {
   set(isExporting, true)
@@ -805,23 +805,24 @@ const stopAdjust = () => {
   clearInterval(adjustInterval)
 }
 
-const isDraggingImage = ref(false),
-  dragImageStyle = ref(false)
+const imgOverlayElem = useTemplateRef('imgOverlayElem'),
+  isDraggingImage = ref(false),
+  imgOverlayStyle = ref(false)
 let dragStartClientX = 0,
   dragStartClientY = 0,
   dragStartNumX = 0,
   dragStartNumY = 0,
   dragUnitX = 'px',
   dragUnitY = 'px'
-const setDragImageStyle = (event, bound = false) => {
-  set(dragImageStyle, bound)
+const setImgOverlayStyle = (event, bound = false) => {
+  set(imgOverlayStyle, bound)
 }
 const calculateDragElemStyle = (event) => {
-  setDragImageStyle(false, event.target.getBoundingClientRect())
+  setImgOverlayStyle(false, event.target.getBoundingClientRect())
 }
 const onPointerDown = (event) => {
   if (!get(currentLayer) || get(currentLayer).locked) return
-  setDragImageStyle(false, useElementBounding(getCurrentImage()))
+  setImgOverlayStyle(false, useElementBounding(getCurrentImage()))
 
   // store initial cursor and parsed values
   dragStartClientX = event.clientX
@@ -904,6 +905,12 @@ const stopImageDrag = () => {
   window.removeEventListener('pointerup', onPointerUp)
   window.removeEventListener('pointercancel', onPointerUp)
 }
+const handleClickOutsideImg = (event) => {
+  if (!get(imgOverlayStyle)) return
+  if (get(imgOverlayElem)?.contains(event.target) || getCurrentImage().contains(event.target)) return
+
+  setImgOverlayStyle(false)
+}
 
 const syncLayersStructural = (wipeSettings = true) => {
   if (wipeSettings) set(copiedSettings, null)
@@ -939,6 +946,13 @@ const syncLayersStructural = (wipeSettings = true) => {
     arr.sort((a, b) => currentIds.indexOf(a.id) - currentIds.indexOf(b.id))
   }
 }
+
+onMounted(() => {
+  document.addEventListener('mousedown', handleClickOutsideImg)
+})
+onUnmounted(() => {
+  document.addEventListener('mousedown', handleClickOutsideImg)
+})
 </script>
 
 <template>
@@ -1057,7 +1071,6 @@ const syncLayersStructural = (wipeSettings = true) => {
   </div>
   <header
     class="z-10 flex w-full flex-row items-stretch justify-between gap-2 bg-slate-700 px-4 py-3 transition-all xl:px-6 xl:py-5"
-    @mousedown.left="setDragImageStyle($event, false)"
     :class="{ 'bg-transparent': inPreview }"
   >
     <div class="flex flex-row items-stretch gap-2 duration-250 ease-in-out xl:gap-4" :class="{ 'pointer-events-none opacity-0': inPreview }">
@@ -1140,7 +1153,7 @@ const syncLayersStructural = (wipeSettings = true) => {
       </ListboxElem>
     </div>
   </header>
-  <div class="relative flex-1 overflow-hidden" ref="layerWrapperElem" @mousedown.left.self="setDragImageStyle($event, false)" @wheel="setZoomScale(0, $event)">
+  <div class="relative flex-1 overflow-hidden" ref="layerWrapperElem" @wheel="setZoomScale(0, $event)">
     <div class="absolute top-1/2 left-1/2 -translate-1/2 overflow-hidden border border-slate-300">
       <TransitionGroup
         :style="`width: ${Math.round(cmsResModelWidth * (zoomScale / 100))}px; height: ${Math.round(cmsResModelHeight * (zoomScale / 100))}px`"
@@ -1187,14 +1200,15 @@ const syncLayersStructural = (wipeSettings = true) => {
     </span>
   </div>
   <div
-    v-if="dragImageStyle"
-    :style="`top: ${dragImageStyle.top}px; left: ${dragImageStyle.left}px; width: ${dragImageStyle.width}px; height: ${dragImageStyle.height}px`"
+    v-if="imgOverlayStyle"
+    :style="`top: ${imgOverlayStyle.top}px; left: ${imgOverlayStyle.left}px; width: ${imgOverlayStyle.width}px; height: ${imgOverlayStyle.height}px`"
     :class="{ 'cursor-move!': isDraggingImage, hidden: inPreview || isExporting }"
     class="transtion-opacity fixed cursor-pointer outline outline-red-500"
     @pointerdown.left="onPointerDown"
+    ref="imgOverlayElem"
   ></div>
   <div class="pointer-events-none absolute right-6 bottom-5 left-6 flex items-end justify-between gap-2 *:pointer-events-auto">
-    <window class="w-88 2xl:w-96" :class="{ 'pointer-events-none opacity-0': inPreview === true }" @mousedown.left="setDragImageStyle($event, false)">
+    <window class="w-88 2xl:w-96" :class="{ 'pointer-events-none opacity-0': inPreview === true }">
       <div class="flex items-baseline justify-between gap-8">
         <span class="font-bold">Background color</span>
         <div class="flex gap-1">
@@ -1429,7 +1443,7 @@ const syncLayersStructural = (wipeSettings = true) => {
       </div>
       <ListboxElem class="flex-1" :optionArray="bgSettingsFitArray" v-model="currentLayer.bgImageFit" :disabled="currentLayer.locked" />
     </window>
-    <div class="flex duration-250 ease-in-out" :class="{ 'pointer-events-none opacity-0': inPreview }" @mousedown.left="setDragImageStyle($event, false)">
+    <div class="flex duration-250 ease-in-out" :class="{ 'pointer-events-none opacity-0': inPreview }">
       <button class="rounded-r-none border-r-0" @click.left="copyCurrentSettings" tooltip="Copy this preset's layer settings">
         <Icon icon="mdi:content-copy" class="size-5" />
         <span class="relative hidden xl:inline">
@@ -1445,7 +1459,7 @@ const syncLayersStructural = (wipeSettings = true) => {
         </span>
       </button>
     </div>
-    <window class="w-88 2xl:w-96" :class="{ 'pointer-events-none opacity-0': inPreview }" @mousedown.left="setDragImageStyle($event, false)">
+    <window class="w-88 2xl:w-96" :class="{ 'pointer-events-none opacity-0': inPreview }">
       <div class="flex w-full justify-between">
         <span class="font-bold">Layers</span>
         <button class="transparent smallest" @click.left="addLayer" tooltip="Add a new layer">
