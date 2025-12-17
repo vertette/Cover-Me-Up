@@ -878,8 +878,8 @@ const onPointerMoveImage = (event) => {
   const deltaPxY = deltaScreenY * scaleFactor
 
   // compute converted deltas
-  let deltaInUnitX = convertPXToUnit(deltaPxX, dragUnitX, 'x')
-  let deltaInUnitY = convertPXToUnit(deltaPxY, dragUnitY, 'y')
+  let deltaInUnitX = convertPXToUnit(deltaPxX, dragUnitX, get(cmsResModelWidth))
+  let deltaInUnitY = convertPXToUnit(deltaPxY, dragUnitY, get(cmsResModelHeight))
 
   // if the layer is flipped, the CSS used is calc(100% - pos) so we need to invert movement
   if (get(currentLayer).bgHorFlip) deltaInUnitX = -deltaInUnitX

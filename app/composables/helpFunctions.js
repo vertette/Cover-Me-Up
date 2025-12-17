@@ -2,10 +2,8 @@ export const clamp = (min, num, max) => {
   return Math.min(Math.max(min, num), max)
 }
 
-export const convertPXToUnit = (deltaPx, unit, axis) => {
+export const convertPXToUnit = (deltaPx, unit, base) => {
   if (unit === '%' || unit.trim() === '%') {
-    // percent relative to the canvas resolution dimension
-    const base = axis === 'x' ? get(cmsResModelWidth) : get(cmsResModelHeight)
     if (!base || base === 0) return 0
     return (deltaPx / base) * 100
   }
