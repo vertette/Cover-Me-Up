@@ -965,7 +965,7 @@ onUnmounted(() => {
     @click.left.self="setModal()"
   >
     <TransitionGroup name="modalList">
-      <window v-if="currentModal === 'resModal'" class="fixed top-1/2 left-1/2 w-[min(512px,50vw)] -translate-1/2 shadow-2xl">
+      <window v-if="currentModal === 'resModal'" class="fixed top-1/2 left-1/2 w-[min(512px,50vw)] -translate-1/2 shadow-2xl max-h-[75vh] overflow-y-auto">
         <span class="font-bold">Modify the custom resolution presets</span>
         <form class="flex flex-col gap-2 2xl:gap-4" @submit.prevent="modifyResolutions" novalidate="true" ref="resFormElem">
           <div v-for="(customRes, index) in cmsCustomResArray" class="flex flex-row gap-2 2xl:gap-4">
