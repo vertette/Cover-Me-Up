@@ -978,10 +978,10 @@ onUnmounted(() => {
               <input placeholder="e.g. 128x128" minlength="3" pattern="[0-9]*x[0-9]*" :value="customRes.value" required />
             </div>
             <div class="flex flex-col justify-end">
-              <button class="transparent smallest" @click.left.prevent="removeResolution(index)" :disabled="cmsCustomResArray.length === 1" tooltip="Remove this preset">
+              <button class="transparent smallest size-5 2xl:size-6" @click.left.prevent="removeResolution(index)" :disabled="cmsCustomResArray.length === 1" tooltip="Remove this preset">
                 <Icon icon="mdi:minus" class="size-3" />
               </button>
-              <button class="transparent smallest" @click.left.prevent="addResolution()" tooltip="Add a new preset">
+              <button class="transparent smallest size-5 2xl:size-6" @click.left.prevent="addResolution()" tooltip="Add a new preset">
                 <Icon icon="mdi:plus" class="size-3" />
               </button>
             </div>
