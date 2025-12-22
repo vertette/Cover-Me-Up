@@ -30,7 +30,7 @@
   }
 
   button {
-    @apply flex cursor-pointer appearance-none items-center justify-center gap-x-2 rounded-lg border-1 border-gray-300 bg-slate-800 px-4 py-2.5 text-sm leading-none transition select-none 2xl:px-5 2xl:py-3 2xl:text-base;
+    @apply flex cursor-pointer appearance-none items-center justify-center gap-x-2 rounded-lg border border-gray-300 bg-slate-800 px-4 py-2.5 text-sm leading-none transition select-none 2xl:px-5 2xl:py-3 2xl:text-base;
   }
 
   button.small {
@@ -68,7 +68,7 @@
 
   button:active > svg,
   button:active > span {
-    @apply translate-[1px];
+    @apply translate-px;
   }
 
   button:focus-visible {
@@ -110,11 +110,11 @@
 
   checkbox::before,
   checkbox::after {
-    @apply absolute w-[1px] h-[150%] bg-white left-1/2 -translate-x-1/2 -translate-y-1/6 origin-center -rotate-45
+    @apply absolute w-px h-[150%] bg-white left-1/2 -translate-x-1/2 -translate-y-1/6 origin-center -rotate-45
   }
 
   checkbox::after {
-    @apply !rotate-45
+    @apply rotate-45!
   }
 
   checkbox.active::before,
@@ -127,7 +127,7 @@
   }
 
   listbox {
-    @apply relative cursor-pointer rounded-lg border-1 border-gray-300 bg-slate-800 transition-all select-none;
+    @apply relative cursor-pointer rounded-lg border border-gray-300 bg-slate-800 transition-all select-none;
   }
 
   listbox[disabled='true'] {
@@ -148,7 +148,7 @@
   }
 
   listboxmenu {
-    @apply pointer-events-none absolute z-10 -mx-[1px] -mb-[1px] flex w-max flex-col rounded-lg border-1 border-[inherit] bg-[inherit] opacity-0 transition-opacity overflow-y-auto;
+    @apply pointer-events-none absolute z-10 -mx-px -mb-px flex w-max flex-col rounded-lg border border-inherit bg-inherit opacity-0 transition-opacity overflow-y-auto;
   }
 
   listbox.right listboxmenu {
@@ -156,7 +156,7 @@
   }
 
   listbox.upsideDown listboxmenu {
-    @apply bottom-full -mt-[1px] mb-0;
+    @apply bottom-full -mt-px mb-0;
   }
 
   listbox.active listboxmenu {
