@@ -1,5 +1,5 @@
 <script setup>
-import { get, set, reactiveComputed, useEventListener } from '@vueuse/core'
+import { get, set, reactiveComputed, useStorage, useEventListener } from '@vueuse/core'
 import { useSortable } from '@vueuse/integrations/useSortable'
 import ListboxElem from './components/ListboxElem.vue'
 import domToImage from 'dom-to-image'
@@ -225,7 +225,7 @@ const openInfoLink = () => {
   downloadFile(infoLinkObject[get(cmsModel)], null, false)
 }
 
-const gridSettings = reactive({
+const gridSettings = useStorage('grid-settings', {
   visible: true,
   color: 'White',
   opacity: 0.25,
